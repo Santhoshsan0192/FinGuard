@@ -1,0 +1,31 @@
+{
+  "system": {
+    "project_name": "FinGuard",
+    "version": "2.0.0",
+    "description": "Explainable AI-Driven Risk Scoring for Fraud Analyst Decision Support"
+  },
+  "risk_thresholds": {
+    "low_threshold": 40.0,
+    "high_threshold": 75.0
+  },
+  "calibration": {
+    "method": "sigmoid",
+    "cv": 3
+  },
+  "model": {
+    "algorithm": "XGBoost",
+    "version": "v2.0-leakfree",
+    "n_estimators": 100,
+    "max_depth": 4,
+    "learning_rate": 0.06,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "reg_lambda": 2.0,
+    "scale_pos_weight": 4.0,
+    "random_state": 42
+  },
+  "mongodb": {
+    "uri": "mongodb://localhost:27017",
+    "database": "finguard"
+  }
+}

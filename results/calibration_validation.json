@@ -1,0 +1,37 @@
+[
+  {
+    "method": "Raw XGBoost Probabilities",
+    "brier_score": 0.0108,
+    "ece": 0.0116,
+    "log_loss": 0.0377,
+    "pr_auc": 0.9668
+  },
+  {
+    "method": "Calibrated: Platt Sigmoid (3-Fold CV on Train)",
+    "brier_score": 0.0118,
+    "ece": 0.0129,
+    "log_loss": 0.0438,
+    "pr_auc": 0.9626
+  },
+  {
+    "method": "Calibrated: Platt Sigmoid (5-Fold CV on Train)",
+    "brier_score": 0.0122,
+    "ece": 0.0167,
+    "log_loss": 0.0457,
+    "pr_auc": 0.9689
+  },
+  {
+    "method": "Calibrated: Isotonic Regression (3-Fold CV on Train)",
+    "brier_score": 0.0106,
+    "ece": 0.0104,
+    "log_loss": 0.0346,
+    "pr_auc": 0.9561
+  },
+  {
+    "method": "Calibrated: Platt Sigmoid (Chronological Train/Val Holdout)",
+    "brier_score": 0.0129,
+    "ece": 0.01,
+    "log_loss": 0.0473,
+    "pr_auc": 0.9643
+  }
+]

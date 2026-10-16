@@ -1,0 +1,9 @@
+endpoint,requests,mean_ms,median_ms,p95_ms,p99_ms,success_rate
+GET /api/dashboard/summary,25,51.71,50.42,64.61,66.15,100.0
+GET /api/dashboard/risk-distribution,25,25.28,28.2,32.75,32.85,100.0
+GET /api/dashboard/risk-trend,25,81.39,80.61,90.79,102.79,100.0
+"GET /api/alerts (page=0, size=20)",25,25.91,29.34,34.85,35.0,100.0
+GET /api/alerts/{id},25,29.33,30.6,33.79,34.41,100.0
+GET /api/customers/{id},25,28.11,30.98,34.35,34.42,100.0
+GET /api/customers/{id}/explanation,25,20.64,16.33,30.49,31.34,100.0
+GET /api/batches,25,17.33,16.04,28.97,29.04,100.0

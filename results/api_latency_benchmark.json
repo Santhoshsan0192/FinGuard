@@ -1,0 +1,74 @@
+[
+  {
+    "requests": 25,
+    "mean_ms": 51.71,
+    "median_ms": 50.42,
+    "p95_ms": 64.61,
+    "p99_ms": 66.15,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/dashboard/summary"
+  },
+  {
+    "requests": 25,
+    "mean_ms": 25.28,
+    "median_ms": 28.2,
+    "p95_ms": 32.75,
+    "p99_ms": 32.85,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/dashboard/risk-distribution"
+  },
+  {
+    "requests": 25,
+    "mean_ms": 81.39,
+    "median_ms": 80.61,
+    "p95_ms": 90.79,
+    "p99_ms": 102.79,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/dashboard/risk-trend"
+  },
+  {
+    "requests": 25,
+    "mean_ms": 25.91,
+    "median_ms": 29.34,
+    "p95_ms": 34.85,
+    "p99_ms": 35.0,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/alerts (page=0, size=20)"
+  },
+  {
+    "requests": 25,
+    "mean_ms": 29.33,
+    "median_ms": 30.6,
+    "p95_ms": 33.79,
+    "p99_ms": 34.41,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/alerts/{id}"
+  },
+  {
+    "requests": 25,
+    "mean_ms": 28.11,
+    "median_ms": 30.98,
+    "p95_ms": 34.35,
+    "p99_ms": 34.42,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/customers/{id}"
+  },
+  {
+    "requests": 25,
+    "mean_ms": 20.64,
+    "median_ms": 16.33,
+    "p95_ms": 30.49,
+    "p99_ms": 31.34,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/customers/{id}/explanation"
+  },
+  {
+    "requests": 25,
+    "mean_ms": 17.33,
+    "median_ms": 16.04,
+    "p95_ms": 28.97,
+    "p99_ms": 29.04,
+    "success_rate": 100.0,
+    "endpoint": "GET /api/batches"
+  }
+]

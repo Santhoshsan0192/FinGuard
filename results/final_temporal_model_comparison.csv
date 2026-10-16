@@ -1,0 +1,4 @@
+Model,Precision,Recall,F1,Accuracy,ROC_AUC,PR_AUC,TN,FP,FN,TP
+Logistic Regression,0.8298,0.975,0.8966,0.9836,0.9966,0.9659,502,8,1,39
+Random Forest,0.907,0.975,0.9398,0.9909,0.9977,0.9685,506,4,1,39
+XGBoost (FinGuard),0.9231,0.9,0.9114,0.9873,0.9975,0.9668,507,3,4,36

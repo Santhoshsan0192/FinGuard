@@ -1,0 +1,85 @@
+# ==============================================================================
+# FinGuard Root .gitignore
+# ==============================================================================
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Environment & Secrets
+.env
+.env.*
+*.local
+*.pem
+*.key
+*.p12
+
+# Database Backups & Local Data Dumps
+backup_finguard/
+*.dump
+*.sql
+*.rdb
+
+# Backend (Java / Maven) Build Outputs
+backend/target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Frontend (Node / Vite / Playwright)
+node_modules/
+**/node_modules/
+frontend/dist/
+**/dist/
+**/dist-ssr/
+frontend/playwright-report/
+**/playwright-report/
+frontend/test-results/
+**/test-results/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python & Machine Learning Pipeline
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+.pytest_cache/
+**/.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/
+**/logs/
+
+# IDE & Editors
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Scratch & Non-Production Helper Files
+backend/HashGen.java
+qa_test.js
+

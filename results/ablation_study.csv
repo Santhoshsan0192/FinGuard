@@ -1,0 +1,5 @@
+Experiment,Feature_Count,Precision,Recall,F1,ROC_AUC,PR_AUC
+Experiment A: Transaction-only,13,0.9211,0.875,0.8974,0.9953,0.9441
+Experiment B: Transaction + Behavioural,18,0.9,0.9,0.9,0.9972,0.9613
+Experiment C: Transaction + Behavioural + Velocity,23,0.9231,0.9,0.9114,0.9975,0.9668
+Experiment D: Full FinGuard Feature Set,38,0.9231,0.9,0.9114,0.9978,0.972

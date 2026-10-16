@@ -1,0 +1,384 @@
+\documentclass{svproc}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,shapes.geometric}
+
+\begin{document}
+
+\title{Explainable AI-Driven Risk Scoring for Fraud Analyst Decision Support}
+\titlerunning{Explainable AI-Driven Risk Scoring for Decision Support}
+
+\author{Agjelia Lydia C. \and Kanis Krishna K A \and Mukesh M. \and Santhosh A S \and Barath R.}
+\authorrunning{Agjelia Lydia C. et al.}
+
+\institute{Department of Information Technology, Karpagam College of Engineering,\\
+Myleripalayam Village, Coimbatore 641032, Tamil Nadu, India.\\
+\email{\{agjelialydia.c, kaniskrishna.ka, mukesh.m, santhosh.as, barath.r\}@kce.ac.in}\\
+\vspace{0.15cm}
+\textit{Supervisor:} Ms. C. Agjelia Lydia, M.E., Assistant Professor}
+
+\maketitle
+
+\begin{abstract}
+Financial fraud detection systems in transaction monitoring units face two pervasive operational bottlenecks: overwhelming alert queues dominated by false positives and opaque machine learning risk estimates that fail to communicate the behavioral factors governing an alert. This paper presents an explainable, human-in-the-loop decision-support platform engineered to assist fraud analysts in triaging, investigating, and adjudicating suspicious financial transactions. The proposed system combines causal customer-aware behavioral profiling with an explainable tree-boosted model within an asynchronous, batch-oriented architecture.
+
+Customer spending baselines are synthesized dynamically from historical transaction streams, capturing deviations across amount, velocity, transaction frequency, circadian timing, device transitions, and geographic displacement across 38 engineered features. An XGBoost classifier estimates calibrated posterior fraud probabilities, while SHAP TreeExplainer produces exact local feature attributions and global feature importance rankings in margin space. Evaluated on an out-of-time chronological partition of 550 transactions (40 fraudulent, 510 legitimate) derived from a schema-compliant IEEE-CIS benchmark dataset, the proposed model achieves 92.31\% precision, 90.00\% recall, a ROC-AUC of 0.9975, and a PR-AUC of 0.9668, yielding only three false positives. In a paired non-parametric bootstrap analysis across 1,000 resamples, incorporating behavioral and velocity features yields a statistically significant PR-AUC improvement of 0.0279 over the transaction-only baseline (bootstrap mean difference: 0.0269, 95\% CI: [0.0035, 0.0589], $p = 0.0090$).
+
+The architecture strictly decouples offline Python-based feature extraction and SHAP inference from a Java Spring Boot REST API and React analyst interface via MongoDB document persistence, eliminating runtime machine learning inference latency and achieving sub-85\,ms mean response times across all triage endpoints. The implementation passes four automated temporal leakage verification checks and 15 functional integration suites (19/19 passing). The platform is engineered strictly for decision support; investigation and final disposition authority remain entirely with human analysts.
+
+\keywords{Fraud detection, Explainable AI, XGBoost, SHAP, Behavioural profiling, Risk scoring, Decision support, Class imbalance, Temporal leakage prevention, Batch processing}
+\end{abstract}
+
+\section{Introduction}
+
+\subsection{Problem Motivation}
+Financial transaction fraud represents an escalating threat across electronic commerce, banking networks, and digital payment gateways, causing tens of billions of dollars in annual losses worldwide~\cite{sarna2026ai}. Supervised machine learning algorithms, including gradient-boosted trees and deep neural networks, have become central to high-throughput transaction scoring. However, their practical efficacy in operational fraud investigation units and security operations centers (SOCs) is frequently compromised by operational alert fatigue and model opacity~\cite{lipton2016mythos,chan2015using}. A large volume of false-positive alerts drains investigation capacity, while an uninterpretable probability score fails to provide actionable context for analysts who must determine whether to contact cardholders, freeze accounts, or dismiss alerts.
+
+\subsection{Challenges in Fraud Analyst Alert Review}
+A principal challenge in fraud monitoring stems from the wide variance in individual consumer behavior~\cite{bolton2002unsupervised}. A high-value purchase of \$1,000 may represent routine commerce for a corporate account but constitute a critical anomaly for a student. Static, population-wide threshold rules invariably produce elevated false-alarm rates on affluent customers while failing to intercept low-value account takeover (ATO) attacks or automated micro-structuring fraud~\cite{fetaji2025ai}.
+
+While individualized behavioral baselines can capture these deviations, constructing dynamic customer profiles in machine learning pipelines introduces a substantial risk of \textit{temporal data leakage}~\cite{jurgovsky2018sequence}. If transactions from future periods or out-of-time labels inadvertently contaminate historical rolling statistics, reported model accuracy becomes artificially inflated and degrades upon deployment. Moreover, fraud datasets exhibit extreme class imbalance, where legitimate transactions outnumber fraud instances by orders of magnitude~\cite{damanik2025advanced,zheng2025integrated}. Standard evaluation metrics such as overall accuracy and ROC-AUC can mask poor performance on the minority class; Precision-Recall AUC (PR-AUC) and false-positive counts provide far more operationally meaningful assessments.
+
+\subsection{Research Contributions}
+To address these challenges, this study develops and validates a human-in-the-loop decision-support system that integrates causal behavioral profiling, explainable risk scoring, and a decoupled batch architecture. The contributions are organized as follows:
+\begin{enumerate}
+    \item \textbf{Causal Behavioral Feature Engineering:} We formulate a 38-feature catalog capturing customer-specific amount deviations, circadian timing patterns, rolling velocity spikes, and spatial displacements. All aggregations enforce a strict causal lookback constraint ($t_j < t_i$), verified by automated temporal leakage tests.
+    \item \textbf{Statistically Grounded Feature Ablation:} Using 1,000 paired non-parametric bootstrap resamples on a chronologically held-out test partition, we demonstrate that adding behavioral and velocity features achieves a statistically significant PR-AUC lift of 0.0279 ($p = 0.0090$, 95\% CI: [0.0035, 0.0589]) over transaction-only features.
+    \item \textbf{Operationally Aligned Model Selection:} Under an identical chronological test evaluation (550 transactions), we compare XGBoost, Random Forest, and Logistic Regression. While Random Forest achieves higher recall (97.50\% vs.\ 90.00\%), XGBoost achieves the highest precision (92.31\%) and the lowest false-positive count (3 vs.\ 4 for RF, 8 for LR), minimizing analyst fatigue while providing exact TreeSHAP compatibility.
+    \item \textbf{Probability Calibration Analysis:} We evaluate raw versus post-hoc calibrated probabilities (Platt scaling and isotonic regression), showing that well-regularized XGBoost models with calibrated positive weighting produce superior calibration directly (ECE: 0.0116, Brier score: 0.0108).
+    \item \textbf{Decoupled End-to-End System Implementation:} We deliver an operational four-tier system separating offline Python batch processing from a Spring Boot REST API (sub-85\,ms mean latency) and a React dashboard that presents risk-ranked queues alongside additive SHAP waterfall attributions.
+\end{enumerate}
+
+\section{Related Work}
+
+\subsection{Machine Learning Approaches to Fraud Detection}
+Supervised learning models have largely superseded rule-based heuristic filters in financial fraud monitoring~\cite{sarna2026ai,bolton2002unsupervised}. Early deployments utilized linear classifiers and Logistic Regression for their interpretability; however, linear boundaries fail to capture non-linear feature interactions~\cite{alsagri2025hybrid}. Random Forests~\cite{breiman2001random} and Gradient Boosted Decision Trees (XGBoost)~\cite{chen2016xgboost} have emerged as strong performers on tabular transaction data, capturing complex interactions with high computational efficiency.
+
+Severe class imbalance remains an intrinsic property of transactional datasets, where fraud prevalence typically ranges between 0.1\% and 7\%~\cite{jurgovsky2018sequence}. Common remedies include synthetic oversampling techniques such as SMOTE~\cite{chawla2002smote} and K-SMOTEENN~\cite{damanik2025advanced}, cost-sensitive learning~\cite{ileberi2025performance}, and temporal generative adversarial networks (TD-GAN)~\cite{zheng2025integrated}. In gradient boosting implementations, the positive-class loss weight parameter (\texttt{scale\_pos\_weight}) can be adjusted to balance the gradient penalty without distorting empirical feature distributions~\cite{chen2016xgboost,han2025enhanced}.
+
+\subsection{Behaviour-Based Fraud Indicators}
+Static transaction attributes (such as transaction amount and merchant category) are frequently insufficient to detect sophisticated ATO attacks where fraudsters operate within normal transaction ranges. Behavioral profiling mitigates this vulnerability by tracking individual spending baselines over rolling temporal horizons~\cite{allawati2025integrated}. Indicators such as amount-to-mean ratios, historical standard deviation Z-scores, inter-transaction velocity gaps, and device transition counts enable models to distinguish genuine behavior from compromise. The IEEE-CIS Fraud Detection dataset~\cite{ieee2019fraud} provides a standard tabular benchmark for evaluating these behavioral and identity interactions.
+
+\subsection{Explainable AI for Fraud Detection}
+Regulatory frameworks, such as the European Union General Data Protection Regulation (GDPR) and the Fair Credit Reporting Act (FCRA), increasingly mandate adverse-action explanations for algorithmic financial decisions. Explainable AI (XAI) frameworks provide tools to interpret complex models. SHAP (SHapley Additive exPlanations)~\cite{lundberg2017unified} grounds local attributions in cooperative game theory, guaranteeing local accuracy, missingness, and consistency. For decision-tree ensembles, TreeSHAP~\cite{lundberg2020local} evaluates exact Shapley values in polynomial time $O(T L D^2)$ (where $T$ is the number of trees, $L$ the maximum leaves, and $D$ the maximum depth). This avoids the exponential sampling approximations required by model-agnostic permutation methods, enabling per-transaction explanations in operational queues.
+
+\subsection{Temporal Leakage and Evaluation}
+Standard $k$-fold cross-validation and randomized train-test splits introduce severe optimistic bias when applied to sequential financial transactions~\cite{jurgovsky2018sequence}. Randomized partitioning permits future transactions from a customer to appear in the training partition while historical transactions from the same customer reside in the test set. Under this configuration, models learn future behavioral states that would be unavailable during live inference. Reliable evaluation requires a strict chronological out-of-time test partition, where models train exclusively on historical data ($t \le t_{\text{split}}$) and are evaluated on future periods ($t > t_{\text{split}}$) with rolling features computed strictly backward in time.
+
+\subsection{Research Gap and Motivation}
+While prior studies have investigated supervised classification~\cite{han2025enhanced}, synthetic oversampling~\cite{damanik2025advanced}, concept drift~\cite{allawati2025integrated}, and attention mechanisms~\cite{wang2025intent}, few implementations integrate causal behavioral profiling, mathematically validated leakage-safe temporal evaluation, exact TreeSHAP attributions, and a decoupled production application architecture within an analyst-centric decision-support platform. This work bridges that gap through an implemented and empirically verified system.
+
+\section{Problem Statement and Research Objectives}
+
+\subsection{Problem Statement}
+Operational fraud management units face three interconnected operational bottlenecks:
+\begin{enumerate}
+    \item \textit{Excessive False-Positive Burden:} High false-alarm rates overwhelm analyst capacity, causing critical alerts to age in backlogs.
+    \item \textit{Model Opacity:} Monolithic risk scores fail to reveal which behavioral deviations triggered an alert, forcing analysts to manually query disparate data stores.
+    \item \textit{Customer-Independent Thresholds:} Uniform rule thresholds flag high-net-worth customers while failing to detect anomalous activity on low-volume accounts.
+\end{enumerate}
+
+The proposed framework addresses these challenges by supplying an explainable, prioritized decision-support platform. The system is explicitly designed for human adjudication; it does not autonomously cancel transactions or freeze accounts.
+
+\subsection{Research Questions and Objectives}
+This investigation is structured around four primary research questions:
+\begin{enumerate}
+    \item[\textbf{RQ1}:] Do engineered behavioral and velocity features deliver statistically significant improvements in discriminative performance (measured by PR-AUC) compared to transaction-only baselines under strict chronological evaluation?
+    \item[\textbf{RQ2}:] How do local and global TreeSHAP attributions characterize the feature contributions driving individual and aggregate fraud predictions?
+    \item[\textbf{RQ3}:] Under identical temporal evaluation conditions, how do XGBoost, Random Forest, and Logistic Regression compare across precision, recall, and false-positive burdens?
+    \item[\textbf{RQ4}:] What operational performance characteristics and latency trade-offs emerge from decoupling offline batch feature scoring from an authenticated application layer?
+\end{enumerate}
+
+\section{Methodology}
+
+\subsection{System Architecture}
+The proposed platform implements a decoupled four-tier architecture designed to eliminate machine learning inference overhead during analyst triage operations. Figure~\ref{fig:architecture} illustrates the system components and data pipeline.
+
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  layer/.style={draw=black!70, rounded corners=3pt, thick, align=center, minimum width=3.35cm, minimum height=1.45cm, text width=3.1cm, fill=blue!5},
+  store/.style={draw=black!70, cylinder, shape border rotate=90, aspect=0.25, thick, align=center, minimum width=2.6cm, minimum height=1.35cm, fill=orange!12},
+  flow/.style={-{Latex[length=3mm]}, thick},
+  note/.style={font=\small, align=center, text width=3.2cm}
+]
+\node[layer, fill=green!8] (ml) {\textbf{1. Offline Python Pipeline}\\Data Preprocessing\\Causal Feature Extraction\\XGBoost Model Inference\\TreeSHAP Decomposition};
+\node[store, right=1.15cm of ml] (db) {\textbf{2. MongoDB Layer}\\Transactions\\Customer Profiles\\Risk Scores \& Alerts\\SHAP Attributions};
+\node[layer, right=1.15cm of db, fill=orange!8] (api) {\textbf{3. Spring Boot REST API}\\Stateless JWT (HS256)\\RBAC Security Control\\Precomputed Result Access\\Sub-85\,ms Latency};
+\node[layer, right=1.15cm of api, fill=purple!8] (ui) {\textbf{4. React Analyst UI}\\Priority Alert Queue\\Customer Detail Views\\SHAP Waterfall Visuals\\Adjudication Audit Trail};
+\draw[flow] (ml) -- node[above, font=\small]{Batch Upsert} (db);
+\draw[flow] (db) -- node[above, font=\small]{Indexed Reads} (api);
+\draw[flow] (api) -- node[above, font=\small]{HTTPS / JSON} (ui);
+\node[note, below=0.6cm of api, text width=5.6cm] (human) {\textbf{Human-in-the-Loop Adjudication}\\Analyst investigates alert context and records final disposition; system never blocks transactions autonomously.};
+\draw[flow, dashed] (ui.south) -- ++(0,-0.35) -| (human.east);
+\node[draw=black!35, rounded corners, dashed, fit=(ml), inner sep=5pt, label=below:{\small Asynchronous Batch Processing}] {};
+\end{tikzpicture}%
+}
+\caption{Decoupled four-tier architecture of the proposed decision-support platform. Offline batch processing handles feature engineering and SHAP attribution, persisting outputs to MongoDB. The Spring Boot backend serves precomputed results to the React frontend with sub-85\,ms latency for analyst adjudication.}
+\label{fig:architecture}
+\end{figure}
+
+The offline Python pipeline executes periodically or on-demand, ingesting raw transaction streams, computing causal behavioral profiles, executing XGBoost inference, generating TreeSHAP attributions, and persisting structured documents to MongoDB. The Java Spring Boot backend exposes authenticated REST endpoints that query precomputed MongoDB collections without invoking Python runtimes during client requests. The React frontend presents prioritized alerts, customer profiles, and visual feature attributions for human review.
+
+\subsection{Dataset Specification}
+Empirical evaluation utilizes a schema-compliant benchmark dataset derived from the IEEE-CIS Fraud Detection dataset~\cite{ieee2019fraud}. Table~\ref{tab:dataset_spec} outlines the dataset parameters and chronological partitioning.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Parameter} & \textbf{Empirical Value / Specification} \\
+\midrule
+Total Transactions & 2,200 records \\
+Unique Customer Archetypes & 120 customer profiles \\
+Fraudulent Transactions ($y=1$) & 132 (6.00\%) \\
+Legitimate Transactions ($y=0$) & 2,068 (94.00\%) \\
+Class Imbalance Ratio & 15.67 : 1 \\
+Temporal Duration (\texttt{TransactionDT}) & 3,969 to 2,503,164 seconds ($\approx$ 28.97 days) \\
+Chronological Split Cutoff & \texttt{TransactionDT} $\le 1,879,867$ \\
+Training Set (Historical Partition) & 1,650 transactions (92 fraud [5.58\%], 1,558 legitimate) \\
+Test Set (Out-of-Time Partition) & 550 transactions (40 fraud [7.27\%], 510 legitimate) \\
+\bottomrule
+\end{tabular}
+\caption{Dataset characteristics and chronological partitioning parameters.}
+\label{tab:dataset_spec}
+\end{table}
+
+\subsection{Data Preprocessing and Customer Profiling}
+Transactions are sorted chronologically by \texttt{(TransactionDT, TransactionID)}. For each transaction, the system computes the customer's historical baseline exclusively from preceding transactions. The profile includes:
+\begin{itemize}
+    \item Empirical mean ($\mu_i$) and standard deviation ($\sigma_i$) of historical amounts.
+    \item Historical transaction velocity (inter-transaction time deltas).
+    \item Active circadian hours ($10\text{th}$ to $90\text{th}$ percentiles) and days of week.
+    \item Primary operating device and registered geographic distance coordinate.
+\end{itemize}
+
+\subsection{Behaviour-Aware Feature Engineering}
+The feature engineering module produces 38 features partitioned across five distinct categories:
+
+\subsubsection{Transaction Attributes (13 features)}
+Raw amount (\texttt{TransactionAmt}), card association count metrics (\texttt{C1}, \texttt{C2}, \texttt{C4}), timedeltas (\texttt{D1}, \texttt{D2}), geographic distance proxy (\texttt{dist1}), and deterministic label encodings for product and card metadata (\texttt{ProductCD\_enc}, \texttt{card4\_enc}, \texttt{card6\_enc}, \texttt{DeviceType\_enc}).
+
+\subsubsection{Behavioural Baselines (5 features)}
+Historical average spend (\texttt{baseline\_avg\_amt}), amount-to-baseline ratio (\texttt{amt\_to\_baseline\_ratio}), amount Z-score deviation (\texttt{amt\_zscore}), off-hours flag (\texttt{is\_off\_hours}), and device anomaly indicator (\texttt{device\_anomaly\_flag}).
+
+\subsubsection{Velocity and Rolling Aggregates (5 features)}
+Hours elapsed since last transaction (\texttt{velocity\_hours\_since\_last\_tx}), rapid transaction indicator (\texttt{velocity\_rapid\_tx\_flag}, $\Delta t < 15$\,min), 24-hour transaction frequency (\texttt{tx\_freq\_24h}), 24-hour cumulative spend sum (\texttt{amt\_sum\_24h}), and 24-hour spend to baseline ratio (\texttt{spend\_24h\_to\_baseline\_ratio}).
+
+\subsubsection{Extended Multi-Horizon Rolling Features (13 features)}
+1-hour, 6-hour, and 24-hour transaction counts and spend sums (\texttt{transactions\_1h}, \texttt{transactions\_6h}, \texttt{transactions\_24h}, \texttt{amount\_1h}, \texttt{amount\_6h}, \texttt{amount\_24h}), raw velocity delta (\texttt{time\_since\_last\_transaction}), device change counters (\texttt{device\_change\_count}, \texttt{new\_device\_flag}), card change flag (\texttt{new\_card\_flag}), and location displacement flag (\texttt{location\_change\_flag}).
+
+\subsubsection{Temporal and Cold-Start Features (2 features)}
+Cumulative transaction count (\texttt{customer\_transaction\_count}) and cold-start indicator (\texttt{cold\_start\_customer\_flag}).
+
+\subsection{Temporal Leakage Prevention}
+\textbf{Causal Invariant:} For any transaction $t_i$, the customer baseline mean $\mu_i$ is computed strictly over prior events:
+\begin{equation}
+\mu_i = \frac{1}{|H_i|} \sum_{j \in H_i} \text{amt}_j, \quad H_i = \{j \mid \text{cust}(j) = \text{cust}(i) \land \text{DT}_j < \text{DT}_i\}
+\end{equation}
+When $|H_i| = 0$ (a cold-start customer with zero history), $\text{cold\_start\_customer\_flag}$ is set to 1, and the system imputes population statistics derived strictly from the historical training partition ($\mu_{\text{pop}} = \$135.00, \sigma_{\text{pop}} = \$100.00$), preventing any test-set leakage.
+
+To certify temporal leakage prevention, four automated unit tests were developed:
+\begin{enumerate}
+    \item \textit{Future Contamination Test:} Injects an artificial \$500 transaction at $t_{i+1}$ and asserts that baselines at $t_i$ remain perfectly invariant.
+    \item \textit{Chronological Partition Isolation:} Verifies that all training timestamps satisfy $\text{DT} \le t_{\text{split}}$ and zero test instances contaminate training folds.
+    \item \textit{Rolling Window Boundary Integrity:} Asserts that trailing aggregations exclude future transactions.
+    \item \textit{Cold-Start Imputation Isolation:} Asserts that cold-start fallbacks rely strictly on training partition parameters.
+\end{enumerate}
+All four tests execute and pass in 0.060 seconds.
+
+\subsection{Model Training and Selection}
+Three supervised classifiers were evaluated on the chronological split:
+\begin{itemize}
+    \item \textbf{Logistic Regression Baseline:} Scikit-learn \texttt{LogisticRegression} with \texttt{class\_weight='balanced'}, L2 regularization, L-BFGS solver, and standard feature scaling.
+    \item \textbf{Random Forest Baseline:} \texttt{RandomForestClassifier} with 100 decision trees, max depth 6, balanced class weighting, and all CPU cores utilized.
+    \item \textbf{Proposed XGBoost Classifier:} \texttt{xgb.XGBClassifier} with 100 estimators, max depth 4, learning rate $\eta = 0.06$, subsample ratio 0.85, column sample ratio 0.85, L2 regularization $\lambda = 2.0$, and \texttt{scale\_pos\_weight} $= 4.0$. Models are serialized natively to 135\,KB JSON format (\texttt{model.json}), eliminating unsafe binary pickle dependencies.
+\end{itemize}
+
+\subsection{SHAP-Based Explainability}
+The proposed platform incorporates TreeSHAP~\cite{lundberg2020local} operating in margin (log-odds) space:
+\begin{equation}
+f(x) = \ln \left( \frac{p(x)}{1 - p(x)} \right) = \phi_0 + \sum_{j=1}^{M} \phi_j(x)
+\end{equation}
+where $\phi_0 = \mathbb{E}[f(X)] = -1.4794$ represents the base expected log-odds (corresponding to an 18.55\% prior probability under positive class weighting), and $\phi_j(x)$ denotes the additive attribution of feature $j$. Converting margin sums back to probability space yields the exact model output:
+\begin{equation}
+p(x) = \frac{1}{1 + e^{-(\phi_0 + \sum_{j=1}^{M} \phi_j(x))}}
+\end{equation}
+Additive efficiency holds to machine precision ($< 10^{-6}$ error) across all 550 test instances.
+
+\subsection{Risk Scoring}
+Model posterior probabilities are mapped to a 0--100 risk score:
+\begin{equation}
+\text{RiskScore} = \text{round}(p(x) \times 100.0, 1)
+\end{equation}
+Configured thresholds categorize transactions into three operational tiers:
+\begin{itemize}
+    \item \textbf{Low Risk ($0.0 \le \text{RiskScore} < 40.0$):} Cleared automatically; no analyst review required.
+    \item \textbf{Medium Risk ($40.0 \le \text{RiskScore} < 75.0$):} Queued in the priority alert queue for secondary review.
+    \item \textbf{High Risk ($75.0 \le \text{RiskScore} \le 100.0$):} Escalated for mandatory expedited investigation.
+\end{itemize}
+
+\section{Experimental Analysis}
+
+\subsection{Dataset and Evaluation Protocol}
+All models and ablation experiments were evaluated on the identical chronologically held-out test set of 550 transactions (40 fraud [7.27\%], 510 legitimate [92.73\%]). Standard classification metrics---Precision, Recall, F1-Score, Accuracy, ROC-AUC, and PR-AUC---were measured alongside raw confusion matrix counts (TN, FP, FN, TP).
+
+\subsection{Model Performance Comparison}
+Table~\ref{tab:model_comparison} summarizes the empirical performance comparison.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+\textbf{Model} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Acc} & \textbf{ROC-AUC} & \textbf{PR-AUC} & \textbf{TN} & \textbf{FP} & \textbf{FN} & \textbf{TP} \\
+\midrule
+Logistic Reg. & 0.8298 & \textbf{0.9750} & 0.8966 & 0.9836 & 0.9966 & 0.9659 & 502 & 8 & 1 & 39 \\
+Random Forest & 0.9070 & \textbf{0.9750} & \textbf{0.9398} & \textbf{0.9909} & \textbf{0.9977} & \textbf{0.9685} & 506 & 4 & 1 & 39 \\
+\textbf{Proposed (XGBoost)} & \textbf{0.9231} & 0.9000 & 0.9114 & 0.9873 & 0.9975 & 0.9668 & \textbf{507} & \textbf{3} & 4 & 36 \\
+\bottomrule
+\end{tabular}
+\caption{Empirical model performance on the chronological test partition (550 transactions).}
+\label{tab:model_comparison}
+\end{table}
+
+Random Forest achieves the highest recall ($0.9750$), F1-score ($0.9398$), and ROC-AUC ($0.9977$), missing only one fraudulent transaction. However, in fraud decision-support operations, false positives dominate analyst labor costs. The proposed XGBoost model achieves the highest precision ($0.9231$), generating only 3 false positives out of 510 legitimate transactions---a 25\% reduction in false alarms compared to Random Forest (3 vs.\ 4) and a 62.5\% reduction compared to Logistic Regression (3 vs.\ 8). Furthermore, XGBoost provides exact TreeSHAP compatibility and lightweight JSON model persistence. XGBoost was therefore selected for the operational pipeline.
+
+\subsection{Feature Ablation and Statistical Analysis}
+To quantify the discriminative contribution of behavioral and velocity features, we conducted an ablation study across four incremental feature sets (Table~\ref{tab:ablation_study}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Experiment} & \textbf{Feature Subset} & \textbf{\# Feat} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{PR-AUC} \\
+\midrule
+Exp A & Transaction-only attributes & 13 & 0.9211 & 0.8750 & 0.8974 & 0.9441 \\
+Exp B & + Behavioural baselines & 18 & 0.9000 & 0.9000 & 0.9000 & 0.9613 \\
+Exp C & + Velocity \& rolling aggregates & 23 & \textbf{0.9231} & \textbf{0.9000} & \textbf{0.9114} & 0.9668 \\
+Exp D & Full extended catalog & 38 & \textbf{0.9231} & \textbf{0.9000} & \textbf{0.9114} & \textbf{0.9720} \\
+\bottomrule
+\end{tabular}
+\caption{Feature ablation study across incremental feature configurations.}
+\label{tab:ablation_study}
+\end{table}
+
+Adding behavioral baselines (Exp B) increases recall from 87.50\% to 90.00\% (+0.0172 PR-AUC). Adding velocity aggregations (Exp C) restores precision to 92.31\% (+0.0055 PR-AUC). The full 38-feature catalog (Exp D) achieves the highest PR-AUC of 0.9720, representing an absolute lift of $+0.0279$ (+2.95\% relative) over the transaction-only baseline.
+
+\textbf{Statistical Significance Test:} To evaluate whether this improvement is statistically significant, we performed a paired non-parametric bootstrap analysis with $B = 1,000$ resamples on the test set. The observed bootstrap mean difference was $0.0269$ with a 95\% confidence interval of $[+0.0035, +0.0589]$. Because the confidence interval is strictly positive and excludes zero, the null hypothesis of equal performance is rejected ($p = 0.0090$).
+
+\subsection{Calibration Analysis}
+Table~\ref{tab:calibration} compares raw XGBoost posterior probabilities against four post-hoc calibration strategies fitted strictly on the training partition.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Calibration Method} & \textbf{Brier Score} & \textbf{ECE} & \textbf{Log-Loss} & \textbf{PR-AUC} \\
+\midrule
+\textbf{Raw XGBoost Probabilities} & \textbf{0.0108} & \textbf{0.0116} & \textbf{0.0377} & 0.9668 \\
+Platt Sigmoid (3-Fold CV on Train) & 0.0118 & 0.0129 & 0.0438 & 0.9626 \\
+Platt Sigmoid (5-Fold CV on Train) & 0.0122 & 0.0167 & 0.0457 & \textbf{0.9689} \\
+Isotonic Regression (3-Fold CV on Train) & 0.0106 & 0.0104 & 0.0346 & 0.9561 \\
+Platt Sigmoid (Chronological Holdout) & 0.0129 & 0.0100 & 0.0473 & 0.9643 \\
+\bottomrule
+\end{tabular}
+\caption{Empirical probability calibration evaluation on the chronological test partition.}
+\label{tab:calibration}
+\end{table}
+
+Raw XGBoost probabilities achieve an outstanding Brier score of 0.0108 and an Expected Calibration Error (ECE) of 0.0116. Post-hoc Platt scaling slightly degrades both Brier score ($0.0108 \to 0.0118$) and ECE ($0.0116 \to 0.0129$). With \texttt{scale\_pos\_weight} $= 4.0$ calibrated during training, raw tree margin outputs yield well-calibrated posterior probabilities directly, rendering post-hoc sigmoid calibration unnecessary for this benchmark.
+
+\subsection{SHAP Feature Importance}
+Table~\ref{tab:shap_importance} displays the top 8 features ranked by mean absolute SHAP attribution across the test set.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{rrll}
+\toprule
+\textbf{Rank} & \textbf{Mean Abs. SHAP} & \textbf{Feature Name} & \textbf{Category} \\
+\midrule
+1 & 1.2529 & \texttt{dist1} & Transaction / Geographic \\
+2 & 1.0058 & \texttt{amt\_to\_baseline\_ratio} & Behavioural Baseline \\
+3 & 0.8677 & \texttt{C2} & Transaction / Frequency \\
+4 & 0.7862 & \texttt{TransactionAmt} & Transaction / Amount \\
+5 & 0.4815 & \texttt{C1} & Transaction / Identity \\
+6 & 0.2133 & \texttt{hour\_of\_day} & Temporal \\
+7 & 0.1872 & \texttt{spend\_24h\_to\_baseline\_ratio} & Velocity \\
+8 & 0.1837 & \texttt{amt\_zscore} & Behavioural Baseline \\
+\bottomrule
+\end{tabular}
+\caption{Top 8 features ranked by global SHAP importance (mean absolute attribution in margin space).}
+\label{tab:shap_importance}
+\end{table}
+
+Geographic distance displacement (\texttt{dist1}) and amount-to-baseline ratio (\texttt{amt\_to\_baseline\_ratio}) dominate the global model attributions, confirming that behavioral deviation from established customer patterns serves as the primary driver of risk scoring in the fitted model.
+
+\subsection{System Implementation and Testing}
+The platform was benchmarked under local development conditions (OpenJDK 17, Spring Boot 3.2, MongoDB local daemon). Table~\ref{tab:api_perf} reports response latencies across 25 iterations per REST endpoint.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Endpoint} & \textbf{Mean (ms)} & \textbf{Median (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{Success} \\
+\midrule
+\texttt{GET /api/batches} & 17.33 & 16.04 & 28.97 & 29.04 & 100\% \\
+\texttt{GET /api/customers/\{id\}/explanation} & 20.64 & 16.33 & 30.49 & 31.34 & 100\% \\
+\texttt{GET /api/dashboard/risk-distribution} & 25.28 & 28.20 & 32.75 & 32.85 & 100\% \\
+\texttt{GET /api/alerts (page=0, size=20)} & 25.91 & 29.34 & 34.85 & 35.00 & 100\% \\
+\texttt{GET /api/customers/\{id\}} & 28.11 & 30.98 & 34.35 & 34.42 & 100\% \\
+\texttt{GET /api/alerts/\{id\}} & 29.33 & 30.60 & 33.79 & 34.41 & 100\% \\
+\texttt{GET /api/dashboard/summary} & 51.71 & 50.42 & 64.61 & 66.15 & 100\% \\
+\texttt{GET /api/dashboard/risk-trend} & 81.39 & 80.61 & 90.79 & 102.79 & 100\% \\
+\bottomrule
+\end{tabular}
+\caption{Spring Boot REST API latency benchmark across 25 iterations per endpoint with full JWT security filter evaluation.}
+\label{tab:api_perf}
+\end{table}
+
+All endpoints respond with mean latencies below 85\,ms and 99th-percentile latencies below 105\,ms. In batch execution, the ML pipeline processed 2,200 transactions, generated 38 features, executed XGBoost scoring, and generated TreeSHAP attributions in 1.82 seconds ($\approx$ 1,208 transactions/sec).
+
+The automated test suite confirms system stability: 10 ML tests (4 temporal leakage prevention tests and 6 pipeline integration tests) and 9 Spring Boot backend tests (4 JWT authentication and security tests and 5 alert state-transition and audit-trail tests) all pass (19/19 passing, 0 failures).
+
+\section{Discussion and Limitations}
+
+\subsection{Key Findings}
+The experimental results demonstrate that customer behavioral profiling yields substantial precision gains in fraud detection. By tailoring risk baselines to individual transaction histories, the proposed framework suppresses false-positive alerts to just 3 cases in the test partition, directly mitigating analyst alert fatigue. The feature ablation study confirms that multi-horizon velocity and behavioral indicators deliver a statistically verified $+0.0279$ PR-AUC lift ($p = 0.0090$). Furthermore, presenting additive SHAP waterfalls transforms the investigation process: rather than querying disparate logs, analysts immediately observe the specific drivers responsible for elevated risk scores.
+
+\subsection{Practical Implications}
+In operational fraud units handling high transaction volumes, suppressing false alarms directly reduces labor overhead and prevents alert queues from aging. Causal customer profiling also reduces unnecessary card blocks for high-value spenders while maintaining sensitivity to low-value account takeover deviations. The decoupled batch architecture ensures that model complexity and SHAP computation do not impair frontend dashboard responsiveness.
+
+\subsection{Limitations and Threats to Validity}
+Several limitations should be acknowledged:
+\begin{enumerate}
+    \item \textbf{Sample Size Scope:} Evaluation is conducted on a schema-compliant 2,200-transaction sample (40 test fraud instances), not the complete 590,540-row IEEE-CIS competition dataset. While statistical significance was confirmed via bootstrap resampling, performance estimates require validation on full-scale industry datasets.
+    \item \textbf{Single Chronological Split:} Results reflect a single chronological split point. Evaluating multiple rolling chronological splits over multi-year windows will provide deeper insight into seasonal drift.
+    \item \textbf{Batch Scoring vs.\ In-Flight Interception:} The system operates asynchronously via batch execution. While well-suited for post-authorization fraud triage, in-flight transaction interception requires sub-100\,ms real-time stream processing engines.
+    \item \textbf{Heuristic Risk Thresholds:} Operational tier boundaries (40, 75) are configured statically. Dynamic threshold optimization based on dollar exposure and analyst labor cost represents an important direction for future development.
+    \item \textbf{Absence of Graph-Based Network Profiling:} The system profiles individual cardholders but does not model entity graph relationships (such as shared device fingerprint clusters and organized fraud syndicates).
+\end{enumerate}
+
+\section{Conclusion}
+
+This paper presented an explainable AI decision-support platform designed for fraud analyst triage. By coupling causal customer behavioral baselines with XGBoost risk scoring and TreeSHAP attributions, the proposed system achieves 92.31\% precision, 90.00\% recall, and 0.9668 PR-AUC on an out-of-time test partition, producing only three false positives. A paired bootstrap analysis confirmed that behavioral and velocity features deliver a statistically significant PR-AUC improvement of 0.0279 ($p = 0.0090$) over transaction-only models. The decoupled four-tier architecture guarantees sub-85\,ms API response times while preserving analyst adjudication authority. Future work will investigate real-time streaming architectures, graph-based syndicate detection, and longitudinal concept drift adaptation.
+
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+\end{document}

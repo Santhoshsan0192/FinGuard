@@ -1,0 +1,58 @@
+[
+  {
+    "Experiment": "Experiment A: Transaction-only",
+    "Feature_Count": 13,
+    "Precision": 0.9211,
+    "Recall": 0.875,
+    "F1": 0.8974,
+    "Accuracy": 0.9855,
+    "ROC_AUC": 0.9953,
+    "PR_AUC": 0.9441,
+    "TN": 507,
+    "FP": 3,
+    "FN": 5,
+    "TP": 35
+  },
+  {
+    "Experiment": "Experiment B: Transaction + Behavioural",
+    "Feature_Count": 18,
+    "Precision": 0.9,
+    "Recall": 0.9,
+    "F1": 0.9,
+    "Accuracy": 0.9855,
+    "ROC_AUC": 0.9972,
+    "PR_AUC": 0.9613,
+    "TN": 506,
+    "FP": 4,
+    "FN": 4,
+    "TP": 36
+  },
+  {
+    "Experiment": "Experiment C: Transaction + Behavioural + Velocity",
+    "Feature_Count": 23,
+    "Precision": 0.9231,
+    "Recall": 0.9,
+    "F1": 0.9114,
+    "Accuracy": 0.9873,
+    "ROC_AUC": 0.9975,
+    "PR_AUC": 0.9668,
+    "TN": 507,
+    "FP": 3,
+    "FN": 4,
+    "TP": 36
+  },
+  {
+    "Experiment": "Experiment D: Full FinGuard Feature Set",
+    "Feature_Count": 38,
+    "Precision": 0.9231,
+    "Recall": 0.9,
+    "F1": 0.9114,
+    "Accuracy": 0.9873,
+    "ROC_AUC": 0.9978,
+    "PR_AUC": 0.972,
+    "TN": 507,
+    "FP": 3,
+    "FN": 4,
+    "TP": 36
+  }
+]
