@@ -36,14 +36,21 @@ export default function TopRiskDrivers({ drivers }) {
               <div key={idx} className="space-y-1.5">
                 <div className="flex flex-col text-xs mb-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-zinc-200">{driver.description || driver.feature || 'Unknown Feature'}</span>
+                    <span className="font-medium text-zinc-200">
+                      {driver.description || driver.feature || 'Unknown Feature'}
+                    </span>
                     <div className="flex items-center space-x-2">
-                      <span className="font-mono text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-rose-400 border border-zinc-700">
-                        +{importance.toFixed(2)} SHAP
+                      <span 
+                        className="font-mono text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-rose-400 border border-zinc-700"
+                        title={`TreeSHAP Mean |SHAP|: ${importance.toFixed(4)} log-odds`}
+                      >
+                        |SHAP| {Math.abs(importance).toFixed(2)}
                       </span>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-500 mt-0.5">{driver.feature}</span>
+                  {driver.description && driver.description !== driver.feature && (
+                    <span className="text-[10px] font-mono text-zinc-500 mt-0.5">{driver.feature}</span>
+                  )}
                 </div>
 
                 {/* Contribution visual bar */}
@@ -60,8 +67,8 @@ export default function TopRiskDrivers({ drivers }) {
       </div>
 
       <div className="flex items-center justify-between text-[10px] text-zinc-500 mt-4 border-t border-zinc-800/80 pt-3 font-mono">
-        <span>Attribution: TreeSHAP</span>
-        <span className="text-zinc-500">+ Log-Odds</span>
+        <span>Attribution: TreeSHAP Global</span>
+        <span className="text-zinc-500">Mean |SHAP| (Log-Odds)</span>
       </div>
     </div>
   );

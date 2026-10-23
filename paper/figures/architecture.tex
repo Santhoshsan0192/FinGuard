@@ -1,0 +1,67 @@
+\begin{tikzpicture}[
+  node distance=0.9cm and 1.1cm,
+  layer/.style={draw=black!80, rounded corners=3pt, thick, align=center, minimum width=3.3cm, minimum height=1.35cm, font=\footnotesize, fill=blue!6},
+  store/.style={draw=black!80, cylinder, shape border rotate=90, aspect=0.25, thick, align=center, minimum width=2.5cm, minimum height=1.3cm, font=\footnotesize, fill=orange!12},
+  flow/.style={-{Latex[length=2.5mm]}, thick},
+  dashflow/.style={-{Latex[length=2.5mm]}, thick, dashed},
+  note/.style={font=\scriptsize, align=center}
+]
+
+% Tier 1: ML Pipeline
+\node[layer, fill=green!8] (ml) {
+  \textbf{1. Offline ML Pipeline}\\
+  \textit{Python 3.11, XGBoost, SHAP}\\
+  \textbullet\ Chronological Ingestion\\
+  \textbullet\ 38 Causal Features\\
+  \textbullet\ Risk Scoring ($p \in [0,1]$)\\
+  \textbullet\ TreeSHAP Attributions
+};
+
+% Tier 2: Database Store
+\node[store, right=1.0cm of ml] (db) {
+  \textbf{2. Persistence Layer}\\
+  \textit{MongoDB 8.3}\\
+  \textbullet\ Transactions\\
+  \textbullet\ Customer Profiles\\
+  \textbullet\ Risk Scores \& Alerts\\
+  \textbullet\ SHAP Explanations
+};
+
+% Tier 3: Backend API
+\node[layer, right=1.0cm of db, fill=orange!8] (api) {
+  \textbf{3. Service Layer}\\
+  \textit{Spring Boot 3.2, Java 17}\\
+  \textbullet\ Stateless JWT \& RBAC\\
+  \textbullet\ Precomputed JSON APIs\\
+  \textbullet\ Sub-85\,ms Latency\\
+  \textbullet\ Audit History Logger
+};
+
+% Tier 4: Analyst UI
+\node[layer, right=1.0cm of api, fill=purple!8] (ui) {
+  \textbf{4. Analyst UI Layer}\\
+  \textit{React 18, Vite, Recharts}\\
+  \textbullet\ Priority Alert Queue\\
+  \textbullet\ Profile Deviation Viewer\\
+  \textbullet\ SHAP Waterfall Charts\\
+  \textbullet\ Adjudication Modal
+};
+
+% Human in the loop note
+\node[draw=black!70, rounded corners=3pt, fill=yellow!10, below=0.7cm of api, text width=6.5cm, align=center, font=\scriptsize] (human) {
+  \textbf{Human-in-the-Loop Analyst Adjudication (Decision Support)}\\
+  Fraud analyst reviews contextual evidence, inputs investigative notes, and assigns disposition (Confirmed Fraud / Dismissed / Escalated). The platform never autonomously blocks transactions.
+};
+
+% Connectors
+\draw[flow] (ml) -- node[above, font=\scriptsize]{Batch Upsert} (db);
+\draw[flow] (db) -- node[above, font=\scriptsize]{Indexed Reads} (api);
+\draw[flow] (api) -- node[above, font=\scriptsize]{HTTPS / JSON} (ui);
+
+\draw[dashflow] (ui.south) -- ++(0,-0.3) -| (human.east);
+\draw[dashflow] (human.west) -| node[near start, below, font=\scriptsize]{Audit Log State} (api.south);
+
+% Enclosing grouping box
+\node[draw=black!40, rounded corners=4pt, dashed, fit=(ml), inner sep=4pt, label=below:{\scriptsize Asynchronous Batch Mode}] {};
+
+\end{tikzpicture}

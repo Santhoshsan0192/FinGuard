@@ -78,7 +78,7 @@ export default function Dashboard() {
         sortBy,
         direction: sortDirection,
         page,
-        size: 20,
+        size: 10,
       });
       setAlerts(res.content || []);
       setTotalPages(res.totalPages || 1);

@@ -96,7 +96,7 @@ export const finguardApi = {
   },
 
   // Alerts queue with optional filters, sorting, batch, & pagination
-  getAlerts: async ({ batchId, riskLevel, status, search, sortBy, direction, page = 0, size = 20 } = {}) => {
+  getAlerts: async ({ batchId, riskLevel, status, search, sortBy, direction, page = 0, size = 10 } = {}) => {
     const params = { page, size };
     if (batchId) params.batchId = batchId;
     if (riskLevel && riskLevel !== 'ALL') params.riskLevel = riskLevel;
@@ -198,6 +198,47 @@ export const finguardApi = {
   getLatestModel: async () => {
     const res = await api.get('/models/latest');
     return res.data;
+  },
+
+  // Isolated FinGuard Shadow Evaluation Environment (Read-Only, No-Write)
+  shadow: {
+    getSummary: async () => {
+      const res = await api.get('/shadow/summary');
+      return res.data;
+    },
+
+    getRiskDistribution: async () => {
+      const res = await api.get('/shadow/risk-distribution');
+      return res.data;
+    },
+
+    getTopRiskDrivers: async () => {
+      const res = await api.get('/shadow/top-risk-drivers');
+      return res.data;
+    },
+
+    getAlerts: async ({ riskLevel, status, page = 0, size = 10 } = {}) => {
+      const params = { page, size };
+      if (riskLevel && riskLevel !== 'ALL') params.riskLevel = riskLevel;
+      if (status && status !== 'ALL') params.status = status;
+      const res = await api.get('/shadow/alerts', { params });
+      return res.data;
+    },
+
+    getAlertById: async (id) => {
+      const res = await api.get(`/shadow/alerts/${id}`);
+      return res.data;
+    },
+
+    getExplanation: async (txId) => {
+      const res = await api.get(`/shadow/transactions/${txId}/explanation`);
+      return res.data;
+    },
+
+    getStatus: async () => {
+      const res = await api.get('/shadow/status');
+      return res.data;
+    },
   },
 };
 

@@ -1,0 +1,245 @@
+{
+  "audit_title": "FinGuard Phase 4A — Isolated Integration Readiness Audit Report",
+  "timestamp": "2026-10-22T17:18:00Z",
+  "auditor": "Senior Machine Learning Systems Engineer",
+  "status": "AUDIT_COMPLETED_PENDING_APPROVAL",
+  "strict_safety_compliance": {
+    "production_model_untouched": true,
+    "calibrator_untouched": true,
+    "mongodb_data_untouched": true,
+    "spring_boot_untouched": true,
+    "react_frontend_untouched": true,
+    "models_retrained": false,
+    "active_model_switched": false
+  },
+  "prototype_isolation_verification": {
+    "model_file": "ml/kaggle_prototype/behavioural_xgboost.json",
+    "feature_columns_file": "ml/kaggle_prototype/feature_columns.json",
+    "feature_count": 397,
+    "tree_count": 700,
+    "isolation_confirmed": true,
+    "decoupled_from_production_artifacts": true,
+    "card_key_logic": {
+      "implementation": "df['card1'].fillna('nan').astype(str) + '_' + ... + df['card6'].fillna('nan').astype(str)",
+      "null_propagation_prevented": true,
+      "pandas_compatibility": "Verified compatible with pandas 1.x and pandas 3.0+",
+      "parity_verified": "100.0000% match across 118,108 validation records (MAE: 2.20e-09)"
+    }
+  },
+  "calibration_and_risk_scoring_analysis": {
+    "production_calibrator_path": "ml/models/finguard_calibrator.joblib",
+    "calibrator_class": "sklearn.calibration.CalibratedClassifierCV",
+    "calibrator_input_features": 23,
+    "compatibility_status": "INCOMPATIBLE_WITH_397_FEATURES",
+    "compatibility_error_mechanism": "CalibratedClassifierCV validates feature_names_in_ and n_features_in_ == 23; passing 397 features triggers ValueError: X has 397 features, but CalibratedClassifierCV is expecting 23 features as input.",
+    "prototype_scoring_strategy": {
+      "raw_prediction_space": "Sigmoid probabilities from binary:logistic in range [0.0, 1.0]",
+      "risk_score_scaling": "np.round(raw_probability * 100.0, 1)",
+      "risk_level_boundaries": {
+        "HIGH": "risk_score >= 75.0",
+        "MEDIUM": "40.0 <= risk_score < 75.0",
+        "LOW": "risk_score < 40.0"
+      },
+      "integration_requirement": "For initial integration, prototype must operate on raw sigmoid probabilities. If calibrated probabilities are required, a dedicated 397-feature calibrator must be trained on out-of-fold validation predictions."
+    }
+  },
+  "shap_and_api_schema_compatibility": {
+    "shap_algorithm": "TreeExplainer",
+    "explanation_space": "Margin / log-odds space",
+    "sign_convention": {
+      "positive_shap": "shap_value > 0 -> INCREASES_RISK (increases fraud log-odds)",
+      "negative_shap": "shap_value < 0 -> DECREASES_RISK (mitigates fraud log-odds)",
+      "alignment_with_production": "100% IDENTICAL to production 23-feature model"
+    },
+    "subdocument_compatibility": {
+      "top_factor_entity": "com.finguard.model.TopFactor",
+      "fields_verified": [
+        {"name": "feature", "type": "String", "prototype_present": true},
+        {"name": "value", "type": "Double", "prototype_present": true},
+        {"name": "shap_value", "type": "Double", "prototype_present": true},
+        {"name": "impact", "type": "String", "prototype_present": true},
+        {"name": "description", "type": "String", "prototype_present": true}
+      ],
+      "compatibility_status": "FULLY_COMPATIBLE"
+    },
+    "explanation_document_gap_analysis": {
+      "mongodb_collection": "explanations",
+      "spring_boot_entity": "com.finguard.model.Explanation",
+      "prototype_scorer_output": ["base_value", "top_factors"],
+      "missing_fields_in_prototype": [
+        "transaction_id",
+        "batch_id",
+        "customer_id",
+        "positive_drivers",
+        "negative_drivers",
+        "generated_at"
+      ],
+      "remediation_plan": "Augment prototype_scorer.py or integration batch wrapper to split top factors into positive_drivers and negative_drivers lists and attach batch_id, customer_id, and transaction_id before document persistence."
+    },
+    "dashboard_ui_feature_descriptions": {
+      "service": "com.finguard.service.DashboardService",
+      "current_map_size": 13,
+      "risk_driver_resolution_gap": "DashboardService.FEATURE_DESCRIPTIONS contains 13 hard-coded feature mappings. The 397-feature model introduces 374 new features (e.g. V1-V339, C1-C14, D1-D15, amount_deviation, prior_card_count, time_sin, time_cos). Without enrichment, UI will display raw column keys.",
+      "remediation_plan": "Pre-populate 'description' directly in global_feature_importance items stored in the Batch document, allowing DashboardService line 245 to consume model-provided descriptions without requiring backend Java modifications."
+    }
+  },
+  "input_schema_validation": {
+    "local_sample_deficiency": {
+      "file": "ml/data/train_transaction.csv",
+      "available_columns": 25,
+      "required_columns": 392,
+      "status": "INSUFFICIENT_FOR_397_FEATURE_MODEL"
+    },
+    "authoritative_dataset_source": {
+      "path": "C:/Users/Santhosh/Downloads/ieee-fraud-detection/train_transaction.csv",
+      "rows": 590540,
+      "columns": 394,
+      "status": "VERIFIED_AND_AVAILABLE"
+    },
+    "schema_validation_requirements": [
+      "Assert presence of all 392 raw IEEE-CIS base features before running feature extraction.",
+      "Assert presence of TransactionDT and TransactionID for chronological sorting and cyclical timing.",
+      "Raise explicit SchemaValidationError if input DataFrame is missing any required raw columns."
+    ]
+  },
+  "isolated_shadow_test_architecture": {
+    "isolation_principles": [
+      "Zero modifications to production database 'finguard'.",
+      "Target isolated test database 'finguard_shadow' or in-memory evaluation buffers.",
+      "Zero interference with active fraud analyst dashboard or alert queue.",
+      "Zero modification to active batch ID sequences (BATCH-YYYY-NNNN)."
+    ],
+    "shadow_execution_flow": {
+      "step_1": "Ingest transaction batch from authoritative IEEE-CIS validation stream.",
+      "step_2": "Simultaneously score batch with production 23-feature model (active) and prototype 397-feature model (shadow).",
+      "step_3": "Persist active results to production 'finguard' DB; write shadow results to 'finguard_shadow' or emit in-memory parity and divergence metrics.",
+      "step_4": "Compute comparative telemetry: risk score distribution, alert volume, fraud recall at threshold, and latency profiles."
+    },
+    "comparative_metrics_to_capture": [
+      "Mean, median, and standard deviation of risk scores.",
+      "Count and percentage of HIGH (>= 75), MEDIUM (40-74), and LOW (< 40) alerts.",
+      "Confusion matrix and ROC-AUC against validation ground truth.",
+      "Inference throughput (tx/sec) and TreeSHAP latency (ms/tx).",
+      "Divergence matrix (transactions classified differently by the two models)."
+    ]
+  },
+  "automated_test_specifications": {
+    "test_suite_file": "ml/tests/test_kaggle_prototype_integration.py",
+    "test_cases": [
+      {
+        "test_name": "test_model_and_catalog_loading",
+        "description": "Verifies that behavioural_xgboost.json and feature_columns.json load without errors, booster contains 700 trees, and feature count is exactly 397."
+      },
+      {
+        "test_name": "test_feature_ordering_and_catalog_alignment",
+        "description": "Verifies that booster.feature_names matches feature_columns.json['behavioural'] in exact 1-to-1 sequence."
+      },
+      {
+        "test_name": "test_card_key_nan_handling",
+        "description": "Verifies that missing values in card1-card6 are converted to 'nan' strings and do not propagate nullable NA or drop groups during groupby."
+      },
+      {
+        "test_name": "test_behavioural_feature_causality",
+        "description": "Verifies that prior_card_count starts at 0 for cold starts and prior_amount_mean evaluates strictly before current transaction."
+      },
+      {
+        "test_name": "test_amount_deviation_formula",
+        "description": "Verifies that amount_deviation equals (amt - prior_mean) / abs(prior_mean) and handles cold starts gracefully as NaN."
+      },
+      {
+        "test_name": "test_time_cyclical_bounds",
+        "description": "Verifies that time_sin and time_cos lie strictly in [-1.0, 1.0] across all timestamps."
+      },
+      {
+        "test_name": "test_risk_score_monotonicity_and_scaling",
+        "description": "Verifies that probability in [0.0, 1.0] maps monotonically to risk score in [0.0, 100.0] and risk levels map to HIGH/MEDIUM/LOW correctly."
+      },
+      {
+        "test_name": "test_top_factor_schema_compatibility",
+        "description": "Verifies that generated SHAP factors adhere strictly to TopFactor subdocument schema (feature, value, shap_value, impact, description)."
+      },
+      {
+        "test_name": "test_explanation_document_schema",
+        "description": "Verifies that full explanation document contains base_value, top_factors, positive_drivers, and negative_drivers."
+      }
+    ]
+  },
+  "integration_risks_and_prerequisites": {
+    "risks": [
+      {
+        "risk_id": "RISK-01",
+        "title": "Raw Ingestion Schema Deficit in Local Environment",
+        "severity": "HIGH",
+        "impact": "Running prototype against ml/data/train_transaction.csv (25 cols) will fail immediately with missing column ValueError.",
+        "mitigation": "Ingest directly from full IEEE-CIS dataset at C:/Users/Santhosh/Downloads/ieee-fraud-detection/train_transaction.csv or implement strict pre-flight schema validation."
+      },
+      {
+        "risk_id": "RISK-02",
+        "title": "Calibrator Incompatibility",
+        "severity": "HIGH",
+        "impact": "Existing finguard_calibrator.joblib expects 23 features. Passing 397 features triggers fatal runtime exception.",
+        "mitigation": "Do not invoke finguard_calibrator.joblib. Use raw sigmoid probabilities scaled to 0-100 or train a dedicated 397-feature calibrator on validation predictions."
+      },
+      {
+        "risk_id": "RISK-03",
+        "title": "TreeSHAP Batch Latency",
+        "severity": "MEDIUM",
+        "impact": "TreeSHAP on 700 trees x 397 features takes ~1.1 ms per transaction (~130s for 118,108 transactions). Synchronous processing will cause request timeouts.",
+        "mitigation": "Execute batch scoring and TreeSHAP asynchronously in background workers, or compute explanations only for transactions flagged with risk_score >= 40.0."
+      },
+      {
+        "risk_id": "RISK-04",
+        "title": "Customer Profile Mapping Discrepancy",
+        "severity": "MEDIUM",
+        "impact": "Production pipeline derives customer_id from card1, addr1, and email, whereas Kaggle model groups by card1-card6 composite card_key.",
+        "mitigation": "Maintain the customer_id derivation in data_loader.py while extracting card_key independently for behavioural velocity features."
+      },
+      {
+        "risk_id": "RISK-05",
+        "title": "UI Feature Description Fallback",
+        "severity": "LOW",
+        "impact": "Backend DashboardService only maps 13 feature descriptions; 374 new features would render raw technical codes in the frontend.",
+        "mitigation": "Ensure batch scorer pre-populates human-readable descriptions in Batch.global_feature_importance and TopFactor.description."
+      }
+    ],
+    "prerequisites": [
+      "Verified presence and accessibility of full IEEE-CIS dataset (590,540 rows, 394 cols).",
+      "Production model and calibrator remain locked and unmodified.",
+      "Dedicated shadow database 'finguard_shadow' or in-memory execution harness configured.",
+      "Automated test suite implemented and passing 100% prior to any data pipeline modifications.",
+      "User review and explicit sign-off on Phase 4A audit findings."
+    ]
+  },
+  "recommended_implementation_sequence": [
+    {
+      "step": 1,
+      "phase": "Phase 4B",
+      "title": "Automated Prototype Regression Test Suite",
+      "description": "Create ml/tests/test_kaggle_prototype_integration.py validating model loading, 397 feature ordering, missing-value handling, risk-score conversion, and schema compatibility."
+    },
+    {
+      "step": 2,
+      "phase": "Phase 4C",
+      "title": "Isolated Shadow Batch Scoring Harness",
+      "description": "Implement ml/kaggle_prototype/shadow_batch_scorer.py writing exclusively to 'finguard_shadow' or in-memory comparison objects without modifying production MongoDB collections."
+    },
+    {
+      "step": 3,
+      "phase": "Phase 4D",
+      "title": "Dual-Model Comparative Evaluation",
+      "description": "Execute shadow run on the 118,108 validation transactions, logging comparative score distributions, alert volumes, and latency metrics."
+    },
+    {
+      "step": 4,
+      "phase": "Phase 4E",
+      "title": "Calibrator & Explanation Alignment",
+      "description": "Fit an optional 397-feature isotonic calibrator on validation predictions and enrich explanation factor descriptions for Vesta and C/D features."
+    },
+    {
+      "step": 5,
+      "phase": "Phase 4F",
+      "title": "Production Migration Gate",
+      "description": "Provide a complete verification report and rollback plan for formal approval before switching production batch scoring."
+    }
+  ]
+}

@@ -1,15 +1,15 @@
 import React from 'react';
 import { ShieldCheck, AlertCircle, AlertTriangle } from 'lucide-react';
 
-export default function RiskDistribution({ distribution, total }) {
-  const low = distribution?.LOW ?? 0;
-  const medium = distribution?.MEDIUM ?? 0;
-  const high = distribution?.HIGH ?? 0;
-  const totalCount = total || (low + medium + high) || 1;
+export default function RiskDistribution({ distribution, highCount, mediumCount, lowCount, total }) {
+  const low = distribution?.LOW ?? lowCount ?? 0;
+  const medium = distribution?.MEDIUM ?? mediumCount ?? 0;
+  const high = distribution?.HIGH ?? highCount ?? 0;
+  const totalCount = total !== undefined && total !== null ? total : (low + medium + high);
 
-  const lowPct = ((low / totalCount) * 100).toFixed(1);
-  const medPct = ((medium / totalCount) * 100).toFixed(1);
-  const highPct = ((high / totalCount) * 100).toFixed(1);
+  const lowPct = totalCount > 0 ? ((low / totalCount) * 100).toFixed(1) : '0.0';
+  const medPct = totalCount > 0 ? ((medium / totalCount) * 100).toFixed(1) : '0.0';
+  const highPct = totalCount > 0 ? ((high / totalCount) * 100).toFixed(1) : '0.0';
 
   return (
     <div className="bg-[#0d121f] border border-zinc-800/80 rounded-lg p-5 flex flex-col justify-between h-full">
@@ -26,23 +26,30 @@ export default function RiskDistribution({ distribution, total }) {
       {/* Horizontal Multi-Segment Proportional Bar */}
       <div className="my-4">
         <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden flex">
-          <div
-            style={{ width: `${Math.max(lowPct > 0 ? 2 : 0, lowPct)}%` }}
-            className="h-full bg-emerald-500/80 transition-all duration-500"
-            title={`Low Risk: ${low} (${lowPct}%)`}
-          />
-          {medium > 0 && (
+          {low > 0 && (
             <div
-              style={{ width: `${Math.max(2, medPct)}%` }}
-              className="h-full bg-amber-500/80 transition-all duration-500"
-              title={`Medium Risk: ${medium} (${medPct}%)`}
+              style={{ width: `${lowPct}%` }}
+              className="h-full bg-emerald-500/80 transition-all duration-500"
+              title={`Low Risk: ${low.toLocaleString()} (${lowPct}%)`}
             />
           )}
-          <div
-            style={{ width: `${Math.max(highPct > 0 ? 2 : 0, highPct)}%` }}
-            className="h-full bg-rose-500/80 transition-all duration-500"
-            title={`High Risk: ${high} (${highPct}%)`}
-          />
+          {medium > 0 && (
+            <div
+              style={{ width: `${medPct}%` }}
+              className="h-full bg-amber-500/80 transition-all duration-500"
+              title={`Medium Risk: ${medium.toLocaleString()} (${medPct}%)`}
+            />
+          )}
+          {high > 0 && (
+            <div
+              style={{ width: `${highPct}%` }}
+              className="h-full bg-rose-500/80 transition-all duration-500"
+              title={`High Risk: ${high.toLocaleString()} (${highPct}%)`}
+            />
+          )}
+          {totalCount === 0 && (
+            <div className="h-full w-full bg-zinc-800" title="No scored transactions in batch" />
+          )}
         </div>
       </div>
 

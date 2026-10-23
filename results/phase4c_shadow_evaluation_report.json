@@ -1,0 +1,247 @@
+{
+  "report_title": "FinGuard Phase 4C \u2014 Isolated Shadow Scoring Evaluation Report",
+  "timestamp": "2026-10-22T17:48:13Z",
+  "status": "EVALUATION_COMPLETED_SUCCESSFULLY",
+  "dataset_alignment": {
+    "validation_transactions": 118108,
+    "transaction_id_start": 3459432,
+    "transaction_id_end": 3577539,
+    "transaction_id_monotonic": true,
+    "ground_truth_label_agreement_verified": true,
+    "fraud_prevalence_count": 4064,
+    "fraud_prevalence_pct": 3.4409
+  },
+  "models_evaluated": {
+    "kaggle_behavioural_397": {
+      "model_name": "Kaggle Behavioural XGBoost (397 features)",
+      "features_count": 397,
+      "trees_count": 700,
+      "ranking_metrics": {
+        "roc_auc": 0.9121,
+        "pr_auc": 0.5376,
+        "brier_score": 0.0584
+      },
+      "threshold_0_50_metrics": {
+        "threshold": 0.5,
+        "precision": 0.2799,
+        "recall": 0.6877,
+        "f1_score": 0.3979,
+        "accuracy": 0.9284,
+        "true_negatives": 106855,
+        "false_positives": 7189,
+        "false_negatives": 1269,
+        "true_positives": 2795,
+        "false_positive_rate": 0.063
+      },
+      "threshold_0_75_metrics": {
+        "threshold": 0.75,
+        "precision": 0.5295,
+        "recall": 0.5081,
+        "f1_score": 0.5186,
+        "accuracy": 0.9675,
+        "true_negatives": 112209,
+        "false_positives": 1835,
+        "false_negatives": 1999,
+        "true_positives": 2065,
+        "false_positive_rate": 0.0161
+      },
+      "risk_score_distribution": {
+        "mean": 16.54,
+        "std": 20.63,
+        "median": 8.5,
+        "min": 0.0,
+        "max": 100.0,
+        "p10": 1.2,
+        "p25": 3.0,
+        "p50": 8.5,
+        "p75": 21.0,
+        "p90": 45.0,
+        "p95": 64.5,
+        "p99": 96.7,
+        "severity_breakdown": {
+          "high_risk_count": 3910,
+          "high_risk_pct": 3.31,
+          "medium_risk_count": 10159,
+          "medium_risk_pct": 8.6,
+          "low_risk_count": 104039,
+          "low_risk_pct": 88.09
+        }
+      },
+      "latency_profile": {
+        "inference_time_118k_sec": 0.93,
+        "inference_throughput_tx_sec": 126569.9,
+        "shap_latency_ms_per_tx": 1.12
+      }
+    },
+    "finguard_production_23_raw": {
+      "model_name": "FinGuard Production XGBoost (23 features, Raw)",
+      "features_count": 23,
+      "trees_count": 100,
+      "ranking_metrics": {
+        "roc_auc": 0.6197,
+        "pr_auc": 0.047,
+        "brier_score": 0.1797
+      },
+      "threshold_0_50_metrics": {
+        "threshold": 0.5,
+        "precision": 0.0601,
+        "recall": 0.3969,
+        "f1_score": 0.1043,
+        "accuracy": 0.7655,
+        "true_negatives": 88797,
+        "false_positives": 25247,
+        "false_negatives": 2451,
+        "true_positives": 1613,
+        "false_positive_rate": 0.2214
+      },
+      "threshold_0_75_metrics": {
+        "threshold": 0.75,
+        "precision": 0.0602,
+        "recall": 0.2995,
+        "f1_score": 0.1002,
+        "accuracy": 0.815,
+        "true_negatives": 95036,
+        "false_positives": 19008,
+        "false_negatives": 2847,
+        "true_positives": 1217,
+        "false_positive_rate": 0.1667
+      },
+      "risk_score_distribution": {
+        "mean": 24.37,
+        "std": 33.54,
+        "median": 2.6,
+        "min": 0.1,
+        "max": 99.3,
+        "p10": 0.2,
+        "p25": 0.5,
+        "p50": 2.6,
+        "p75": 42.2,
+        "p90": 87.9,
+        "p95": 92.2,
+        "p99": 95.4,
+        "severity_breakdown": {
+          "high_risk_count": 20250,
+          "high_risk_pct": 17.15,
+          "medium_risk_count": 10029,
+          "medium_risk_pct": 8.49,
+          "low_risk_count": 87829,
+          "low_risk_pct": 74.36
+        }
+      },
+      "latency_profile": {
+        "inference_time_118k_sec": 0.02,
+        "inference_throughput_tx_sec": 7382065.0,
+        "shap_latency_ms_per_tx": 0.03
+      }
+    },
+    "finguard_production_23_calibrated": {
+      "model_name": "FinGuard Production XGBoost (23 features, Platt Calibrated)",
+      "features_count": 23,
+      "trees_count": 100,
+      "ranking_metrics": {
+        "roc_auc": 0.626,
+        "pr_auc": 0.0509,
+        "brier_score": 0.1346
+      },
+      "threshold_0_50_metrics": {
+        "threshold": 0.5,
+        "precision": 0.0572,
+        "recall": 0.3275,
+        "f1_score": 0.0974,
+        "accuracy": 0.7912,
+        "true_negatives": 92115,
+        "false_positives": 21929,
+        "false_negatives": 2733,
+        "true_positives": 1331,
+        "false_positive_rate": 0.1923
+      },
+      "threshold_0_75_metrics": {
+        "threshold": 0.75,
+        "precision": 0.0472,
+        "recall": 0.1388,
+        "f1_score": 0.0705,
+        "accuracy": 0.874,
+        "true_negatives": 102665,
+        "false_positives": 11379,
+        "false_negatives": 3500,
+        "true_positives": 564,
+        "false_positive_rate": 0.0998
+      },
+      "risk_score_distribution": {
+        "mean": 18.75,
+        "std": 29.26,
+        "median": 0.8,
+        "min": 0.6,
+        "max": 95.1,
+        "p10": 0.6,
+        "p25": 0.6,
+        "p50": 0.8,
+        "p75": 28.5,
+        "p90": 75.2,
+        "p95": 83.2,
+        "p99": 91.9,
+        "severity_breakdown": {
+          "high_risk_count": 11969,
+          "high_risk_pct": 10.13,
+          "medium_risk_count": 14159,
+          "medium_risk_pct": 11.99,
+          "low_risk_count": 91980,
+          "low_risk_pct": 77.88
+        }
+      },
+      "latency_profile": {
+        "inference_time_118k_sec": 0.17,
+        "inference_throughput_tx_sec": 696663.7,
+        "shap_latency_ms_per_tx": 0.03
+      }
+    }
+  },
+  "divergence_analysis": {
+    "alert_tier_divergence_at_75_score": {
+      "both_flagged_high": 454,
+      "only_397_flagged_high": 3456,
+      "only_23_flagged_high": 11515,
+      "neither_flagged_high": 102683
+    },
+    "fraud_capture_overlap_at_0_50_prob": {
+      "total_fraud_transactions": 4064,
+      "caught_by_both_models": 1108,
+      "caught_only_by_397_model": 1687,
+      "caught_only_by_23_model": 223,
+      "missed_by_both_models": 1046
+    }
+  },
+  "key_findings": {
+    "pr_auc_comparison": {
+      "kaggle_397": 0.5376,
+      "finguard_23_cal": 0.0509,
+      "absolute_pr_auc_delta": 0.4867
+    },
+    "roc_auc_comparison": {
+      "kaggle_397": 0.9121,
+      "finguard_23_cal": 0.626,
+      "absolute_roc_auc_delta": 0.2861
+    },
+    "false_positive_reduction_at_0_50": {
+      "finguard_23_cal_fp": 21929,
+      "kaggle_397_fp": 7189,
+      "net_false_positive_reduction": 14740
+    },
+    "latency_summary": {
+      "inference_throughput_ratio_397_vs_23": 0.02,
+      "shap_latency_ratio_397_vs_23": 37.33
+    }
+  },
+  "documented_limitations": [
+    "The 23-feature model was trained on a 1,650-sample benchmark dataset (286x smaller than Kaggle training split), limiting its out-of-domain generalization on the full IEEE-CIS validation stream.",
+    "The 23-feature calibrator finguard_calibrator.joblib is strictly dimensioned for 23 features and cannot calibrate the 397-feature model.",
+    "TreeSHAP on the 397-feature model requires 1.10 ms per transaction, necessitating asynchronous worker queues for live batches exceeding 1,000 transactions."
+  ],
+  "strict_safety_compliance": {
+    "production_mongodb_writes": 0,
+    "live_traffic_affected": false,
+    "models_retrained": false,
+    "spring_boot_or_react_modified": false,
+    "active_model_switched": false
+  }
+}

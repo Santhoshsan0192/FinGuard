@@ -1,0 +1,39 @@
+\begin{tikzpicture}[
+  node distance=0.6cm and 0.8cm,
+  block/.style={draw=black!80, rounded corners=2pt, thick, align=center, minimum width=2.4cm, minimum height=0.9cm, font=\scriptsize, fill=blue!5},
+  decision/.style={draw=black!80, diamond, aspect=1.8, thick, align=center, font=\scriptsize, fill=yellow!15, inner sep=1pt},
+  flow/.style={-{Latex[length=2mm]}, thick},
+  line/.style={thick}
+]
+
+% Nodes
+\node[block, fill=gray!10] (raw) {Raw Transactions\\$(t_i, \text{cust}_i, \text{amt}_i, \text{device}_i)$};
+\node[block, right=0.6cm of raw, fill=blue!10] (sort) {Chronological Sort\\$\text{DT}_i \le \text{DT}_{i+1}$};
+\node[block, right=0.6cm of sort, fill=green!10] (history) {Causal Lookback Filter\\$H_i = \{j \mid \text{cust}_j = \text{cust}_i \land t_j < t_i\}$};
+
+\node[decision, below=0.7cm of history] (cold) {Cold Start?\\$|H_i| = 0$?};
+
+\node[block, left=1.0cm of cold, fill=red!10] (pop) {Population Fallback\\$\mu_{\text{pop}} = \$135.00, \sigma_{\text{pop}} = \$100.00$\\(\textit{Train Partition Only})};
+\node[block, right=1.0cm of cold, fill=green!15] (profile) {Customer Profiling\\$\mu_i = \frac{1}{|H_i|}\sum_{j} \text{amt}_j$\\$\sigma_i, \text{velocity}, \text{devices}$};
+
+\node[block, below=0.8cm of cold, fill=orange!10, minimum width=6.5cm] (engine) {
+  \textbf{38 Causal Feature Synthesizer}\\
+  \textbullet\ Transaction (13) \quad \textbullet\ Behavioural Deviations (5) \quad \textbullet\ Velocity Aggregates (5)\\
+  \textbullet\ Multi-Horizon Rolling (13) \quad \textbullet\ Temporal \& Cold-Start Flags (2)
+};
+
+\node[block, below=0.6cm of engine, fill=purple!10] (out) {Leakage-Safe Feature Vector $\mathbf{x}_i \in \mathbb{R}^{38}$};
+
+% Connectors
+\draw[flow] (raw) -- (sort);
+\draw[flow] (sort) -- (history);
+\draw[flow] (history) -- (cold);
+
+\draw[flow] (cold) -- node[above, font=\tiny]{Yes} (pop);
+\draw[flow] (cold) -- node[above, font=\tiny]{No} (profile);
+
+\draw[flow] (pop) |- (engine);
+\draw[flow] (profile) |- (engine);
+\draw[flow] (engine) -- (out);
+
+\end{tikzpicture}

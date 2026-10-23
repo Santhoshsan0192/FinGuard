@@ -12,23 +12,30 @@ import { TrendingUp, Clock, Calendar, Layers } from 'lucide-react';
 function CustomTooltip({ active, payload }) {
   if (active && payload && payload.length) {
     const p = payload[0].payload;
+    const vol = p.count ?? p.totalCount ?? 0;
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-xs shadow-xl space-y-2">
-        <div className="font-semibold text-zinc-100">{p.timeLabel}</div>
-        <div className="flex justify-between gap-6 text-zinc-400">
-          <span>Volume:</span>
-          <span className="font-mono font-medium text-zinc-200">{p.count || p.totalCount || 0} tx</span>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-xs shadow-xl space-y-1.5 z-50">
+        <div className="font-semibold text-zinc-100 border-b border-zinc-800 pb-1">{p.timeLabel}</div>
+        <div className="flex justify-between gap-6 text-zinc-400 pt-0.5">
+          <span>Total Scored:</span>
+          <span className="font-mono font-medium text-zinc-200">{vol.toLocaleString()} tx</span>
         </div>
         {p.highRiskCount !== undefined && (
           <div className="flex justify-between gap-6 text-zinc-400">
-            <span>High Risk:</span>
-            <span className="font-mono font-medium text-rose-400">{p.highRiskCount}</span>
+            <span>High Risk (&ge;75):</span>
+            <span className="font-mono font-medium text-rose-400">{p.highRiskCount.toLocaleString()}</span>
           </div>
         )}
-        {p.avgRiskScore !== undefined && (
+        {p.mediumRiskCount !== undefined && (
           <div className="flex justify-between gap-6 text-zinc-400">
-            <span>Avg Score:</span>
-            <span className="font-mono font-medium text-zinc-300">{p.avgRiskScore}/100</span>
+            <span>Medium Risk (40-74):</span>
+            <span className="font-mono font-medium text-amber-400">{p.mediumRiskCount.toLocaleString()}</span>
+          </div>
+        )}
+        {p.lowRiskCount !== undefined && (
+          <div className="flex justify-between gap-6 text-zinc-400">
+            <span>Low Risk (&lt;40):</span>
+            <span className="font-mono font-medium text-emerald-400">{p.lowRiskCount.toLocaleString()}</span>
           </div>
         )}
       </div>
@@ -85,41 +92,50 @@ export default function RiskTrend({ trendData, aggregation = 'hour', onAggregati
         </div>
       </div>
 
-      <div className="h-48 w-full mt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
-            <defs>
-              <linearGradient id="riskGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-              </linearGradient>
-            </defs>
-            <XAxis 
-              dataKey="timeLabel" 
-              stroke="#52525b" 
-              fontSize={10} 
-              tickLine={false} 
-              dy={8}
-            />
-            <YAxis 
-              stroke="#52525b" 
-              fontSize={10} 
-              tickLine={false} 
-              axisLine={false}
-              dx={-8}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Area 
-              type="monotone" 
-              dataKey="count" 
-              stroke="#3b82f6" 
-              strokeWidth={1.5}
-              fillOpacity={1} 
-              fill="url(#riskGradient)" 
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      {data.length === 0 ? (
+        <div className="h-48 w-full mt-2 flex flex-col items-center justify-center text-center p-4 border border-dashed border-zinc-800/80 rounded-md bg-zinc-950/40">
+          <p className="text-xs font-medium text-zinc-400">No Historical Data Available</p>
+          <p className="text-[11px] text-zinc-600 mt-1 max-w-sm">
+            There are insufficient evaluation records for aggregation mode ({aggregation}). Scored offline batch records will populate trend curves once completed.
+          </p>
+        </div>
+      ) : (
+        <div className="h-48 w-full mt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+              <defs>
+                <linearGradient id="riskGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
+              <XAxis 
+                dataKey="timeLabel" 
+                stroke="#52525b" 
+                fontSize={10} 
+                tickLine={false} 
+                dy={8}
+              />
+              <YAxis 
+                stroke="#52525b" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false}
+                dx={-8}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area 
+                type="monotone" 
+                dataKey="count" 
+                stroke="#3b82f6" 
+                strokeWidth={1.5}
+                fillOpacity={1} 
+                fill="url(#riskGradient)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       <div className="flex items-center justify-between text-[10px] text-zinc-500 mt-4 border-t border-zinc-800/80 pt-3 font-mono">
         <span>Aggregation: <strong className="text-zinc-400 uppercase">{aggregation}</strong></span>

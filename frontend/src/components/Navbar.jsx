@@ -8,7 +8,8 @@ import {
   Users, 
   FileText, 
   Activity, 
-  DatabaseZap 
+  DatabaseZap,
+  Server 
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -60,6 +61,7 @@ export default function Navbar({ onRefresh, refreshing }) {
               <NavLinkItem to="/analyst" icon={LayoutDashboard} currentPath={location.pathname}>Overview</NavLinkItem>
               <NavLinkItem to="/analyst/alerts" icon={AlertTriangle} currentPath={location.pathname}>Fraud Alerts</NavLinkItem>
               <NavLinkItem to="/analyst/customers" icon={Users} currentPath={location.pathname}>Customers</NavLinkItem>
+              <NavLinkItem to="/analyst/shadow" icon={Server} currentPath={location.pathname}>Shadow Model</NavLinkItem>
             </nav>
           )}
 

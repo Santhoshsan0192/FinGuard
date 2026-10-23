@@ -1,0 +1,4 @@
+model_key,features,roc_auc,pr_auc,brier_score,precision_at_0_50,recall_at_0_50,f1_at_0_50,false_positives_at_0_50,false_positive_rate_at_0_50,precision_at_0_75,recall_at_0_75,f1_at_0_75,false_positives_at_0_75,mean_risk_score,high_risk_alerts,infer_throughput_tx_sec,shap_latency_ms_per_tx
+kaggle_behavioural_397,397,0.9121,0.5376,0.0584,0.2799,0.6877,0.3979,7189,0.063,0.5295,0.5081,0.5186,1835,16.54,3910,126569.9,1.12
+finguard_production_23_raw,23,0.6197,0.047,0.1797,0.0601,0.3969,0.1043,25247,0.2214,0.0602,0.2995,0.1002,19008,24.37,20250,7382065.0,0.03
+finguard_production_23_calibrated,23,0.626,0.0509,0.1346,0.0572,0.3275,0.0974,21929,0.1923,0.0472,0.1388,0.0705,11379,18.75,11969,696663.7,0.03

@@ -1,0 +1,140 @@
+{
+  "benchmark_title": "FinGuard Phase 2B Isolated Validation Benchmark",
+  "timestamp": "2026-10-22T10:19:11Z",
+  "dataset_alignment": {
+    "validation_records": 118108,
+    "label_agreement_verified": true,
+    "unique_transaction_ids": 118108,
+    "duplicate_transaction_ids": 0,
+    "fraud_prevalence_percent": 3.4409,
+    "total_fraud_count": 4064,
+    "total_legitimate_count": 114044,
+    "transaction_dt_range": [
+      12192900,
+      15811131
+    ]
+  },
+  "models_evaluated": {
+    "kaggle_baseline_xgboost_392": {
+      "features_count": 392,
+      "metrics_at_0_50": {
+        "threshold": 0.5,
+        "precision": 0.2561,
+        "recall": 0.7042,
+        "f1_score": 0.3756,
+        "accuracy": 0.9194,
+        "roc_auc": 0.9113,
+        "pr_auc": 0.5305,
+        "brier_score": 0.065,
+        "true_negatives": 105730,
+        "false_positives": 8314,
+        "false_negatives": 1202,
+        "true_positives": 2862,
+        "mean_predicted_prob": 0.1786,
+        "max_predicted_prob": 0.9999
+      }
+    },
+    "kaggle_behavioural_xgboost_397": {
+      "features_count": 397,
+      "metrics_at_0_50": {
+        "threshold": 0.5,
+        "precision": 0.2799,
+        "recall": 0.6877,
+        "f1_score": 0.3979,
+        "accuracy": 0.9284,
+        "roc_auc": 0.9121,
+        "pr_auc": 0.5376,
+        "brier_score": 0.0584,
+        "true_negatives": 106855,
+        "false_positives": 7189,
+        "false_negatives": 1269,
+        "true_positives": 2795,
+        "mean_predicted_prob": 0.1654,
+        "max_predicted_prob": 0.9999
+      }
+    },
+    "finguard_production_raw_23": {
+      "features_count": 23,
+      "metrics_at_0_50": {
+        "threshold": 0.5,
+        "precision": 0.0601,
+        "recall": 0.3969,
+        "f1_score": 0.1043,
+        "accuracy": 0.7655,
+        "roc_auc": 0.6197,
+        "pr_auc": 0.047,
+        "brier_score": 0.1797,
+        "true_negatives": 88797,
+        "false_positives": 25247,
+        "false_negatives": 2451,
+        "true_positives": 1613,
+        "mean_predicted_prob": 0.2437,
+        "max_predicted_prob": 0.9931
+      },
+      "metrics_at_optimal_f1": {
+        "threshold": 0.62,
+        "precision": 0.0625,
+        "recall": 0.362,
+        "f1_score": 0.1066,
+        "accuracy": 0.7912,
+        "roc_auc": 0.6197,
+        "pr_auc": 0.047,
+        "brier_score": 0.1797,
+        "true_negatives": 91979,
+        "false_positives": 22065,
+        "false_negatives": 2593,
+        "true_positives": 1471,
+        "mean_predicted_prob": 0.2437,
+        "max_predicted_prob": 0.9931
+      }
+    },
+    "finguard_production_calibrated_23": {
+      "features_count": 23,
+      "metrics_at_0_50": {
+        "threshold": 0.5,
+        "precision": 0.0572,
+        "recall": 0.3275,
+        "f1_score": 0.0974,
+        "accuracy": 0.7912,
+        "roc_auc": 0.6259,
+        "pr_auc": 0.0509,
+        "brier_score": 0.1346,
+        "true_negatives": 92115,
+        "false_positives": 21929,
+        "false_negatives": 2733,
+        "true_positives": 1331,
+        "mean_predicted_prob": 0.1876,
+        "max_predicted_prob": 0.9514
+      },
+      "metrics_at_optimal_f1": {
+        "threshold": 0.31,
+        "precision": 0.0592,
+        "recall": 0.4163,
+        "f1_score": 0.1037,
+        "accuracy": 0.7524,
+        "roc_auc": 0.6259,
+        "pr_auc": 0.0509,
+        "brier_score": 0.1346,
+        "true_negatives": 87167,
+        "false_positives": 26877,
+        "false_negatives": 2372,
+        "true_positives": 1692,
+        "mean_predicted_prob": 0.1876,
+        "max_predicted_prob": 0.9514
+      }
+    }
+  },
+  "analysis": {
+    "kaggle_behavioural_vs_baseline_delta": {
+      "pr_auc_delta": 0.0071,
+      "roc_auc_delta": 0.0008,
+      "f1_delta": 0.0223,
+      "false_positive_reduction": 1125
+    },
+    "finguard_out_of_domain_transfer": {
+      "pr_auc": 0.047,
+      "roc_auc": 0.6197,
+      "note": "FinGuard production booster was trained on a 1,650-sample benchmark dataset (286x smaller than Kaggle training set of 472,432 samples)."
+    }
+  }
+}

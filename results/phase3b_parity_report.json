@@ -1,0 +1,70 @@
+{
+  "audit_title": "FinGuard Phase 3B - Behavioural Model Prediction Parity Audit Report",
+  "timestamp": "2026-10-22T17:08:29Z",
+  "parity_evaluation": {
+    "compared_transactions": 118108,
+    "tolerance_threshold": 0.0001,
+    "within_tolerance_count": 118108,
+    "within_tolerance_percent": 100.0,
+    "mismatched_predictions_count": 0,
+    "maximum_absolute_error": 4.327507019397103e-08,
+    "mean_absolute_error": 2.204269704931737e-09,
+    "parity_status": "EXACT_PARITY_ACHIEVED"
+  },
+  "dataset_alignment_verification": {
+    "validation_split_method": "Chronological 80% train / 20% validation",
+    "validation_split_indices": "iloc[472432:590540]",
+    "transaction_count": 118108,
+    "transaction_id_start": 3459432,
+    "transaction_id_end": 3577539,
+    "transaction_id_monotonic": true,
+    "ground_truth_label_match_rate": 1.0,
+    "ground_truth_label_aligned": true
+  },
+  "root_cause_analysis": {
+    "primary_cause": "Pandas 3.0 String Dtype Missing Value Propagation vs Pandas 1.x String Literal Conversion",
+    "mechanism": "In pandas 1.x (the original Kaggle runtime), calling .astype(str) on columns containing missing float/object values converts NaN to the literal string 'nan'. In pandas 3.0+ (the local virtual environment), .astype(str) preserves nullable NA. When card columns (card1-card6) were concatenated with '_' to construct the card key, any row with a missing card attribute resulted in NA. Pandas groupby() drops NA groups by default (dropna=True), leaving prior_card_count, prior_amount_mean, and amount_deviation as NaN. In the validation set, exactly 2,182 records had missing card details, resulting in 2,181 prediction discrepancies up to 0.3425. Explicitly applying .fillna('nan').astype(str) restores exact Kaggle card key behavior.",
+    "affected_records_full_dataset": 11042,
+    "affected_records_validation_split": 2182,
+    "discrepancies_before_fix": 2181,
+    "discrepancies_after_fix": 0
+  },
+  "verified_feature_specifications": {
+    "prior_card_count": "df.groupby('card_key').cumcount() - Strictly causal 0-indexed prior transaction velocity",
+    "prior_amount_mean": "(cumsum - amt) / cumcount.replace(0, np.nan) - Strictly causal prior cumulative mean volume",
+    "amount_deviation": "(TransactionAmt - prior_amount_mean) / np.abs(prior_amount_mean) - Relative signed deviation from prior mean",
+    "time_sin": "np.sin(2.0 * np.pi * (TransactionDT % 86400) / 86400.0) - Diurnal cyclical sine",
+    "time_cos": "np.cos(2.0 * np.pi * (TransactionDT % 86400) / 86400.0) - Diurnal cyclical cosine",
+    "card_key": "card1_card2_card3_card4_card5_card6 with NaNs preserved as 'nan' strings",
+    "categorical_encoding": "14 categorical columns (ProductCD, card4, card6, P_emaildomain, R_emaildomain, M1-M9) encoded using deterministic .astype('category').cat.codes",
+    "feature_column_order": "Exact 397-feature catalog ordering matching feature_columns.json['behavioural']"
+  },
+  "files_inspected": [
+    "C:/Users/Santhosh/Downloads/finguard_results/behavioural_xgboost.json",
+    "C:/Users/Santhosh/Downloads/finguard_results/baseline_xgboost.json",
+    "C:/Users/Santhosh/Downloads/finguard_results/feature_columns.json",
+    "C:/Users/Santhosh/Downloads/finguard_results/experiment_info.json",
+    "C:/Users/Santhosh/Downloads/finguard_results/model_comparison.json",
+    "C:/Users/Santhosh/Downloads/finguard_results/model_comparison.csv",
+    "C:/Users/Santhosh/Downloads/finguard_results/confusion_matrices.json",
+    "C:/Users/Santhosh/Downloads/finguard_results/validation_predictions.csv",
+    "C:/Users/Santhosh/Downloads/ieee-fraud-detection/train_transaction.csv",
+    "d:/Fraud Detection/ml/kaggle_prototype/kaggle_feature_pipeline.py",
+    "d:/Fraud Detection/ml/kaggle_prototype/prototype_scorer.py",
+    "d:/Fraud Detection/ml/kaggle_prototype/verify_prototype_parity.py",
+    "d:/Fraud Detection/results/phase3_prototype_verification.json"
+  ],
+  "corrections_made": [
+    {
+      "file": "d:/Fraud Detection/ml/kaggle_prototype/kaggle_feature_pipeline.py",
+      "function": "construct_card_key",
+      "modification": "Applied .fillna('nan').astype(str) on card1 through card6 to prevent nullable NA propagation under pandas 3.0+ and restore exact pandas 1.x Kaggle string composite key semantics."
+    },
+    {
+      "file": "d:/Fraud Detection/ml/kaggle_prototype/kaggle_feature_pipeline.py",
+      "function": "extract_kaggle_behavioural_features",
+      "modification": "Standardized amount_deviation formula to explicitly divide by np.abs(df['prior_amount_mean'])."
+    }
+  ],
+  "remaining_blockers": []
+}

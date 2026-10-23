@@ -1,5 +1,7 @@
 package com.finguard.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -8,52 +10,65 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * Transaction entity - Stores individual customer transactions scored by batch pipeline.
  */
 @Document(collection = "transactions")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
 
     @Id
     private String id; // batch_id + "_" + transaction_id
 
     @Field("transaction_id")
+    @JsonAlias({"transaction_id", "transactionId"})
     private Long transactionId;
 
     @Field("batch_id")
+    @JsonAlias({"batch_id", "batchId"})
     private String batchId;
 
     @Field("customer_id")
+    @JsonAlias({"customer_id", "customerId"})
     private String customerId;
 
     private Double amount;
 
     @Field("product_cd")
+    @JsonAlias({"product_cd", "productCd", "ProductCD"})
     private String productCd;
 
     private String card4;
     private String card6;
 
     @Field("device_type")
+    @JsonAlias({"device_type", "deviceType", "DeviceType"})
     private String deviceType;
 
     @Field("device_info")
+    @JsonAlias({"device_info", "deviceInfo", "DeviceInfo"})
     private String deviceInfo;
 
     @Field("hour_of_day")
+    @JsonAlias({"hour_of_day", "hourOfDay"})
     private Integer hourOfDay;
 
     @Field("day_of_week")
+    @JsonAlias({"day_of_week", "dayOfWeek"})
     private Integer dayOfWeek;
 
     @Field("TransactionDT")
+    @JsonAlias({"TransactionDT", "transaction_dt", "transactionDt"})
     private Long transactionDt;
 
     private String timestamp;
 
     @Field("cold_start_customer_flag")
+    @JsonAlias({"cold_start_customer_flag", "coldStartCustomerFlag"})
     private Integer coldStartCustomerFlag;
 
     @Field("is_fraud_ground_truth")
+    @JsonAlias({"is_fraud_ground_truth", "isFraudGroundTruth", "isFraud"})
     private Integer isFraudGroundTruth;
 
     @Field("created_at")
+    @JsonAlias({"created_at", "createdAt"})
     private String createdAt;
 
     public Transaction() {}

@@ -1,5 +1,7 @@
 package com.finguard.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -9,38 +11,48 @@ import org.springframework.data.mongodb.core.mapping.Field;
  * Mutable by fraud analysts (status updates, notes).
  */
 @Document(collection = "alerts")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Alert {
 
     @Id
     private String id; // alert_id
 
     @Field("alert_id")
+    @JsonAlias({"alert_id", "alertId"})
     private String alertId;
 
     @Field("transaction_id")
+    @JsonAlias({"transaction_id", "transactionId"})
     private Long transactionId;
 
     @Field("batch_id")
+    @JsonAlias({"batch_id", "batchId"})
     private String batchId;
 
     @Field("customer_id")
+    @JsonAlias({"customer_id", "customerId"})
     private String customerId;
 
     @Field("customer_name")
+    @JsonAlias({"customer_name", "customerName"})
     private String customerName;
 
     private Double amount;
 
     @Field("risk_score")
+    @JsonAlias({"risk_score", "riskScore"})
     private Double riskScore;
 
     @Field("risk_level")
+    @JsonAlias({"risk_level", "riskLevel"})
     private String riskLevel; // HIGH, MEDIUM, LOW
 
     @Field("primary_risk_driver")
+    @JsonAlias({"primary_risk_driver", "primaryRiskDriver"})
     private String primaryRiskDriver;
 
     @Field("cold_start_flag")
+    @JsonAlias({"cold_start_flag", "coldStartFlag"})
     private Integer coldStartFlag;
 
     private String status; // NEW, UNDER_REVIEW, CONFIRMED_FRAUD, DISMISSED
@@ -48,9 +60,11 @@ public class Alert {
     private String timestamp;
 
     @Field("created_at")
+    @JsonAlias({"created_at", "createdAt"})
     private String createdAt;
 
     @Field("analyst_notes")
+    @JsonAlias({"analyst_notes", "analystNotes"})
     private String analystNotes;
 
     public Alert() {}

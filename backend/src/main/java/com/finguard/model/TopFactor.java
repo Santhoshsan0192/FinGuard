@@ -1,13 +1,20 @@
 package com.finguard.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * TopFactor subdocument representing an individual SHAP feature contribution.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TopFactor {
 
     private String feature;
     private Double value;
+
+    @JsonAlias({"shap_value", "shapValue"})
     private Double shap_value;
+
     private String impact; // INCREASES_RISK or DECREASES_RISK
     private String description;
 

@@ -80,6 +80,5 @@ logs/
 *.sln
 
 # Scratch & Non-Production Helper Files
-backend/HashGen.java
 qa_test.js
 

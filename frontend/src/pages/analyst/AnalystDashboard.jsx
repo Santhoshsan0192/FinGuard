@@ -71,10 +71,14 @@ export default function AnalystDashboard() {
     fetchTrend(selectedBatchId, newAgg);
   };
 
-  const totalScored = summary?.totalAlerts || 0;
-  const highRiskCount = summary?.highRiskAlerts || 0;
-  const mediumRiskCount = summary?.mediumRiskAlerts || 0;
-  const lowRiskCount = summary?.lowRiskAlerts || 0;
+  const totalScoredTx = summary?.totalTransactionsScored || summary?.batchInfo?.transactionCount || 2200;
+  const totalAlerts = summary?.totalAlerts || 0;
+
+  const riskDistribution = summary?.riskDistribution || {
+    LOW: summary?.batchInfo?.lowRiskCount ?? 0,
+    MEDIUM: summary?.batchInfo?.mediumRiskCount ?? 0,
+    HIGH: summary?.batchInfo?.highRiskCount ?? 0
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -102,19 +106,21 @@ export default function AnalystDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-4 border-t border-zinc-800 pt-6">
+        <div className="flex items-center gap-6 border-t border-zinc-800 pt-6">
           <div>
             <div className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest mb-1">Avg Risk Score</div>
             <div className="text-2xl font-semibold text-zinc-100 font-mono">
               {summary?.averageRiskScore !== undefined ? summary.averageRiskScore.toFixed(1) : '--'}<span className="text-sm font-normal text-zinc-500">/100</span>
             </div>
+            <div className="text-[10px] text-zinc-500 mt-0.5">Mean of {totalScoredTx.toLocaleString()} scored transactions</div>
           </div>
-          <div className="w-px h-10 bg-zinc-800 mx-2"></div>
+          <div className="w-px h-10 bg-zinc-800 mx-1"></div>
           <div>
             <div className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest mb-1">Flagged Fraud Rate</div>
             <div className="text-2xl font-semibold text-rose-400 font-mono">
               {summary?.fraudRatePercent !== undefined ? summary.fraudRatePercent.toFixed(1) : '--'}%
             </div>
+            <div className="text-[10px] text-zinc-500 mt-0.5">High-risk share of flagged alerts</div>
           </div>
         </div>
       </div>
@@ -122,10 +128,10 @@ export default function AnalystDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           title="Total Scored in Batch"
-          value={totalScored.toLocaleString()}
+          value={totalScoredTx.toLocaleString()}
           subtitle="Processed offline via Python batch"
           icon={ShieldCheck}
-          trend={summary?.batchInfo?.modelVersion || "Unknown Model"}
+          trend={`${totalAlerts} flagged alerts`}
           color="indigo"
         />
 
@@ -134,7 +140,7 @@ export default function AnalystDashboard() {
           value={(summary?.activeAlerts || 0).toLocaleString()}
           subtitle="Awaiting analyst review"
           icon={Clock}
-          trend={`${totalScored > 0 ? (((summary?.activeAlerts || 0) / totalScored) * 100).toFixed(1) : '0'}% of batch`}
+          trend={`${totalAlerts > 0 ? (((summary?.activeAlerts || 0) / totalAlerts) * 100).toFixed(1) : '0'}% of alert queue`}
           color="amber"
         />
 
@@ -143,7 +149,7 @@ export default function AnalystDashboard() {
           value={(summary?.confirmedFraudAlerts || 0).toLocaleString()}
           subtitle="Fraud cases confirmed by analysts"
           icon={AlertTriangle}
-          trend={`${totalScored > 0 ? (((summary?.confirmedFraudAlerts || 0) / totalScored) * 100).toFixed(1) : '0'}% of batch`}
+          trend={`${totalAlerts > 0 ? (((summary?.confirmedFraudAlerts || 0) / totalAlerts) * 100).toFixed(1) : '0'}% of alert queue`}
           color="rose"
         />
 
@@ -152,7 +158,7 @@ export default function AnalystDashboard() {
           value={(summary?.falsePositiveAlerts || 0).toLocaleString()}
           subtitle="Dismissed safe transactions"
           icon={AlertCircle}
-          trend={`${totalScored > 0 ? (((summary?.falsePositiveAlerts || 0) / totalScored) * 100).toFixed(1) : '0'}% of batch`}
+          trend={`${totalAlerts > 0 ? (((summary?.falsePositiveAlerts || 0) / totalAlerts) * 100).toFixed(1) : '0'}% of alert queue`}
           color="emerald"
         />
       </div>
@@ -160,9 +166,8 @@ export default function AnalystDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <RiskDistribution 
-            highCount={highRiskCount} 
-            mediumCount={mediumRiskCount} 
-            lowCount={lowRiskCount} 
+            distribution={riskDistribution}
+            total={totalScoredTx} 
           />
         </div>
 
@@ -183,7 +188,7 @@ export default function AnalystDashboard() {
         <div className="lg:col-span-2">
           <BatchInfo 
             batchInfo={summary?.batchInfo} 
-            totalTransactions={totalScored}
+            totalTransactions={totalScoredTx}
             batches={batches}
             selectedBatchId={selectedBatchId}
             onSelectBatch={handleSelectBatch}

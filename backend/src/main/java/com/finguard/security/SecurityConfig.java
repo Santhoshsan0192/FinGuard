@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/dashboard/**").hasAnyRole("ANALYST", "ADMIN")
                 .requestMatchers("/api/batches/**").hasAnyRole("ANALYST", "ADMIN")
                 .requestMatchers("/api/models/**").hasAnyRole("ANALYST", "ADMIN")
+                .requestMatchers("/api/shadow/**").hasAnyRole("ANALYST", "ADMIN")
 
                 .anyRequest().authenticated()
             );

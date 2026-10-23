@@ -12,6 +12,7 @@ import AlertsQueue from './pages/analyst/AlertsQueue';
 import AlertDetail from './pages/analyst/AlertDetail';
 import CustomersList from './pages/analyst/CustomersList';
 import CustomerProfile from './pages/analyst/CustomerProfile';
+import ShadowDashboard from './pages/analyst/ShadowDashboard';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -82,6 +83,7 @@ export default function App() {
                   <Route path="alerts/:id" element={<AlertDetail />} />
                   <Route path="customers" element={<CustomersList />} />
                   <Route path="customers/:id" element={<CustomerProfile />} />
+                  <Route path="shadow" element={<ShadowDashboard />} />
                 </Routes>
               </MainLayout>
             </ProtectedRoute>

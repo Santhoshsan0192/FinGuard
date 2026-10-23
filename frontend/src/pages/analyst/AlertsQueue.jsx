@@ -49,7 +49,7 @@ export default function AlertsQueue() {
         sortBy,
         direction: sortDirection,
         page,
-        size: 20,
+        size: 10,
       });
       setAlerts(res.content || []);
       setTotalPages(res.totalPages || 1);
@@ -130,6 +130,7 @@ export default function AlertsQueue() {
         sortDirection={sortDirection}
         onSortChange={handleSortChange}
         page={page}
+        pageSize={10}
         totalPages={totalPages}
         totalElements={totalElements}
         onPageChange={handlePageChange}

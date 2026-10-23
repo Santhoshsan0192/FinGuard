@@ -1,0 +1,17 @@
+{
+  "dataset": "IEEE-CIS Fraud Detection",
+  "split": "Chronological 80% training / 20% validation",
+  "training_rows": 472432,
+  "validation_rows": 118108,
+  "training_fraud_rate_percent": 3.5135,
+  "validation_fraud_rate_percent": 3.4409,
+  "classification_threshold": 0.5,
+  "behavioural_features": [
+    "prior_card_count",
+    "prior_amount_mean",
+    "amount_deviation",
+    "time_sin",
+    "time_cos"
+  ],
+  "note": "Keep the preprocessing code with these models."
+}

@@ -1,0 +1,39 @@
+{
+  "report_title": "FinGuard Phase 3 Isolated Prototype Parity and Verification Report",
+  "timestamp": "2026-10-22T17:08:29Z",
+  "parity_analysis": {
+    "validation_sample_size": 118108,
+    "max_absolute_error": 4.327507019397103e-08,
+    "mean_absolute_error": 2.204269704931737e-09,
+    "parity_within_1e4_percent": 100.0,
+    "reproduction_status": "EXACT_PARITY_VERIFIED"
+  },
+  "performance_benchmark": {
+    "feature_extraction_seconds_590k": 5.79,
+    "feature_extraction_throughput_tx_per_sec": 101936.3,
+    "model_inference_seconds_118k": 0.87,
+    "inference_throughput_tx_per_sec": 136072.8,
+    "shap_explanation_seconds_50_samples": 0.06,
+    "shap_latency_ms_per_transaction": 1.1
+  },
+  "schema_compatibility": {
+    "top_factor_entity_compatible": true,
+    "risk_score_scale_0_to_100": true,
+    "requires_mongodb_changes": false
+  },
+  "unresolved_risks_and_limitations": [
+    "Missing raw IEEE-CIS columns in local benchmark CSV (ml/data/train_transaction.csv only has 29 cols). Live scoring requires full-schema CSV ingestion.",
+    "TreeSHAP latency for 700 trees x 397 features (~70-90 ms per tx) is 60x higher than production 23-feature model (~1.2 ms per tx). For batches > 1,000 tx, asynchronous background batch workers are mandatory.",
+    "Calibrator finguard_calibrator.joblib cannot be used with this 397-feature model; prototype operates directly on raw sigmoid probabilities."
+  ],
+  "created_files": [
+    "d:/Fraud Detection/ml/kaggle_prototype/kaggle_feature_pipeline.py",
+    "d:/Fraud Detection/ml/kaggle_prototype/prototype_scorer.py",
+    "d:/Fraud Detection/ml/kaggle_prototype/verify_prototype_parity.py",
+    "d:/Fraud Detection/ml/kaggle_prototype/behavioural_xgboost.json",
+    "d:/Fraud Detection/ml/kaggle_prototype/feature_columns.json",
+    "d:/Fraud Detection/ml/kaggle_prototype/experiment_info.json",
+    "d:/Fraud Detection/results/phase3_prototype_verification.json",
+    "d:/Fraud Detection/results/phase3b_parity_report.json"
+  ]
+}

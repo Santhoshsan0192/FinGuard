@@ -39,7 +39,7 @@ public class AlertController {
             @RequestParam(defaultValue = "risk_score") String sortBy,
             @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "10") int size
     ) {
         int sanitizedPage = Math.max(0, page);
         int sanitizedSize = Math.max(1, Math.min(100, size));

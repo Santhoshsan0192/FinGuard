@@ -19,11 +19,15 @@ public class DashboardSummaryDto {
     private double averageRiskScore;
     private double fraudRatePercent;
     private Map<String, Long> riskDistribution;
+    private long totalTransactionsScored;
     private java.util.List<Map<String, Object>> riskTrend;
     private java.util.List<Map<String, Object>> topRiskDrivers;
     private Map<String, Object> batchInfo;
 
     public DashboardSummaryDto() {}
+
+    public long getTotalTransactionsScored() { return totalTransactionsScored; }
+    public void setTotalTransactionsScored(long totalTransactionsScored) { this.totalTransactionsScored = totalTransactionsScored; }
 
     public long getTotalAlerts() { return totalAlerts; }
     public void setTotalAlerts(long totalAlerts) { this.totalAlerts = totalAlerts; }

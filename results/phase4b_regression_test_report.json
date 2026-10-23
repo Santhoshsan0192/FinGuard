@@ -1,0 +1,189 @@
+{
+  "report_title": "FinGuard Phase 4B — Automated Prototype Regression Test Report",
+  "timestamp": "2026-10-22T17:24:00Z",
+  "test_target": "397-feature Kaggle Behavioural XGBoost Prototype",
+  "test_file": "ml/tests/test_kaggle_prototype_integration.py",
+  "command_executed": "& \"d:\\Fraud Detection\\ml\\.venv\\Scripts\\python.exe\" -m unittest -v tests/test_kaggle_prototype_integration.py",
+  "execution_summary": {
+    "total_tests": 22,
+    "passed": 22,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "duration_seconds": 2.436,
+    "overall_status": "ALL_TESTS_PASSED"
+  },
+  "test_suite_results": [
+    {
+      "suite_id": "SUITE_1",
+      "suite_name": "TestModelAndCatalogLoading",
+      "description": "Model and feature catalog loading",
+      "tests": [
+        {
+          "name": "test_prototype_model_file_exists",
+          "description": "Assert that behavioural_xgboost.json exists in kaggle_prototype directory",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_feature_catalog_file_exists",
+          "description": "Assert that feature_columns.json exists in kaggle_prototype directory",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_feature_catalog_structure",
+          "description": "Assert feature_columns.json contains valid behavioural and baseline catalogs",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_booster_loading_and_architecture",
+          "description": "Assert that native XGBoost booster loads with 700 trees and 397 features",
+          "status": "PASSED"
+        }
+      ]
+    },
+    {
+      "suite_id": "SUITE_2",
+      "suite_name": "TestFeatureCountAndOrdering",
+      "description": "Exact feature count and ordering",
+      "tests": [
+        {
+          "name": "test_exact_feature_count",
+          "description": "Feature catalog must have exactly 397 features",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_baseline_features_prefix",
+          "description": "First 10 features must match canonical IEEE-CIS transaction ordering",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_behavioural_features_tail_ordering",
+          "description": "The 5 engineered behavioural features must be positioned at indices 392 through 396",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_feature_pipeline_output_alignment",
+          "description": "Pipeline output must produce identical column names and ordering as the 397-feature catalog",
+          "status": "PASSED"
+        }
+      ]
+    },
+    {
+      "suite_id": "SUITE_3",
+      "suite_name": "TestCardKeyHandling",
+      "description": "Card-key missing-value handling",
+      "tests": [
+        {
+          "name": "test_card_key_fully_populated",
+          "description": "Card key with all fields present must concatenate with underscore delimiter",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_card_key_with_missing_values",
+          "description": "Missing card fields must convert to 'nan' string and avoid propagating nullable NA",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_card_key_grouping_consistency",
+          "description": "Transactions sharing identical card profiles with nulls must group together without dropping",
+          "status": "PASSED"
+        }
+      ]
+    },
+    {
+      "suite_id": "SUITE_4",
+      "suite_name": "TestBehaviouralCausalityAndColdStarts",
+      "description": "Behavioural feature causality and cold starts",
+      "tests": [
+        {
+          "name": "test_strict_temporal_causality_and_cold_starts",
+          "description": "Verify that Tx1 starts at count=0/prior_mean=NaN, Tx2/Tx3 compute strictly prior means, and Card B does not contaminate Card A",
+          "status": "PASSED"
+        }
+      ]
+    },
+    {
+      "suite_id": "SUITE_5",
+      "suite_name": "TestAmountDeviationFormula",
+      "description": "Amount-deviation formula and missing-value handling",
+      "tests": [
+        {
+          "name": "test_amount_deviation_computation",
+          "description": "Verify signed relative deviation: (amt - prior_mean) / abs(prior_mean) for spikes, drops, and exact matches",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_amount_deviation_cold_start_nan",
+          "description": "When prior_amount_mean is NaN, amount_deviation must also evaluate to NaN",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_amount_deviation_xgboost_nan_routing",
+          "description": "Verify that XGBoost native inference handles NaN in amount_deviation without error",
+          "status": "PASSED"
+        }
+      ]
+    },
+    {
+      "suite_id": "SUITE_6",
+      "suite_name": "TestRiskScoreMonotonicityAndThresholds",
+      "description": "Risk-score monotonicity and severity thresholds",
+      "tests": [
+        {
+          "name": "test_score_scaling_and_rounding",
+          "description": "Probability in [0, 1] must scale linearly to [0, 100] with 1 decimal precision",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_monotonicity",
+          "description": "Risk scores must be strictly non-decreasing with increasing probabilities",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_severity_classification_thresholds",
+          "description": "Verify FinGuard classification boundaries (HIGH >= 75.0, MEDIUM 40.0-74.9, LOW < 40.0)",
+          "status": "PASSED"
+        }
+      ]
+    },
+    {
+      "suite_id": "SUITE_7",
+      "suite_name": "TestShapExplanationSchemaCompatibility",
+      "description": "SHAP explanation schema compatibility",
+      "tests": [
+        {
+          "name": "test_explanation_document_base_structure",
+          "description": "Explanation output must contain base_value (float) and top_factors (list of 5 items)",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_top_factor_subdocument_schema",
+          "description": "Every item in top_factors must adhere to Spring Boot TopFactor entity fields (feature, value, shap_value, impact, description)",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_shap_impact_sign_consistency",
+          "description": "SHAP impact direction must strictly match the mathematical sign of shap_value (positive: INCREASES_RISK, negative: DECREASES_RISK)",
+          "status": "PASSED"
+        },
+        {
+          "name": "test_positive_and_negative_drivers_partitioning",
+          "description": "Verify that SHAP factors can be cleanly partitioned into positive_drivers and negative_drivers matching Spring Boot Explanation.java",
+          "status": "PASSED"
+        }
+      ]
+    }
+  ],
+  "safety_compliance": {
+    "production_model_untouched": true,
+    "calibrator_untouched": true,
+    "mongodb_data_untouched": true,
+    "spring_boot_untouched": true,
+    "react_frontend_untouched": true,
+    "shadow_scoring_run": false,
+    "active_model_switched": false,
+    "assertions_weakened": false
+  },
+  "identified_defects_and_blockers": [],
+  "next_recommended_phase": "Phase 4C — Isolated Shadow Batch Scoring Harness (awaiting explicit user approval)"
+}

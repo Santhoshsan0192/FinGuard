@@ -146,6 +146,22 @@ public class DashboardService {
         return dist;
     }
 
+    private static final Map<String, String> FEATURE_DESCRIPTIONS = Map.ofEntries(
+        Map.entry("dist1", "Distance from Billing Address"),
+        Map.entry("amt_to_baseline_ratio", "Spending to Customer Baseline Ratio"),
+        Map.entry("C2", "Transaction Frequency Counter C2"),
+        Map.entry("TransactionAmt", "Transaction Amount ($)"),
+        Map.entry("C1", "Card Frequency Counter C1"),
+        Map.entry("hour_of_day", "Hour of Day (Time Anomaly)"),
+        Map.entry("amt_zscore", "Historical Amount Z-Score"),
+        Map.entry("spend_24h_to_baseline_ratio", "24h Spending to Baseline Ratio"),
+        Map.entry("ProductCD_enc", "Product Category Code (Encoded)"),
+        Map.entry("amt_sum_24h", "Cumulative 24h Spend Amount"),
+        Map.entry("device_anomaly_flag", "Unrecognized Device Fingerprint"),
+        Map.entry("velocity_hours_since_last_tx", "Time Delta Since Prior Transaction"),
+        Map.entry("is_off_hours", "Off-Hours Activity Deviation")
+    );
+
     public Map<String, Object> getRiskTrend(String batchId, String aggregation) {
         String activeBatchId = batchService.resolveActiveBatchId(batchId);
         String aggMode = (aggregation != null && !aggregation.isBlank()) ? aggregation.toLowerCase() : "hour";
@@ -157,12 +173,14 @@ public class DashboardService {
             List<Batch> allBatches = batchService.getAllBatches();
             for (Batch b : allBatches) {
                 Map<String, Object> pt = new LinkedHashMap<>();
+                long txCount = b.getTransactionCount() != null ? b.getTransactionCount() : 0L;
                 pt.put("timeLabel", b.getBatchId());
                 pt.put("timestamp", b.getCompletedAt() != null ? b.getCompletedAt() : b.getStartedAt());
+                pt.put("count", txCount);
+                pt.put("totalCount", txCount);
                 pt.put("highRiskCount", b.getHighRiskCount() != null ? b.getHighRiskCount() : 0);
                 pt.put("mediumRiskCount", b.getMediumRiskCount() != null ? b.getMediumRiskCount() : 0);
                 pt.put("lowRiskCount", b.getLowRiskCount() != null ? b.getLowRiskCount() : 0);
-                pt.put("totalCount", b.getTransactionCount() != null ? b.getTransactionCount() : 0);
                 trendPoints.add(pt);
             }
         } else {
@@ -218,7 +236,17 @@ public class DashboardService {
         Optional<Batch> batchOpt = activeBatchId != null ? Optional.ofNullable(batchService.getBatchById(activeBatchId)) : batchService.getLatestBatch();
 
         if (batchOpt.isPresent() && batchOpt.get().getGlobalFeatureImportance() != null && !batchOpt.get().getGlobalFeatureImportance().isEmpty()) {
-            return batchOpt.get().getGlobalFeatureImportance();
+            List<Map<String, Object>> rawList = batchOpt.get().getGlobalFeatureImportance();
+            List<Map<String, Object>> enriched = new ArrayList<>();
+            for (Map<String, Object> item : rawList) {
+                Map<String, Object> copy = new LinkedHashMap<>(item);
+                String feat = (String) copy.get("feature");
+                if (!copy.containsKey("description") || copy.get("description") == null || feat.equals(copy.get("description"))) {
+                    copy.put("description", FEATURE_DESCRIPTIONS.getOrDefault(feat, feat));
+                }
+                enriched.add(copy);
+            }
+            return enriched;
         }
 
         // Fallback default SHAP global drivers

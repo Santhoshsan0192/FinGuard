@@ -33,7 +33,7 @@ export default function PriorityAlertsTable({
   page,
   totalPages,
   totalElements,
-  pageSize = 20,
+  pageSize = 10,
   onPageChange,
   onAlertUpdated
 }) {

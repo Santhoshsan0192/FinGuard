@@ -38,10 +38,17 @@ public class DashboardController {
         Map<String, Object> alertStats = alertService.getAlertStats(batchId);
 
         DashboardSummaryDto dto = new DashboardSummaryDto();
+        dto.setTotalTransactionsScored(((Number) summaryData.getOrDefault("totalTransactionsScored", 0L)).longValue());
         dto.setTotalAlerts(((Number) alertStats.getOrDefault("totalAlerts", 0L)).longValue());
         dto.setHighRiskAlerts(((Number) alertStats.getOrDefault("highRiskCount", 0L)).longValue());
         dto.setMediumRiskAlerts(((Number) alertStats.getOrDefault("mediumRiskCount", 0L)).longValue());
         dto.setLowRiskAlerts(((Number) alertStats.getOrDefault("lowRiskCount", 0L)).longValue());
+
+        Map<String, Long> dist = new LinkedHashMap<>();
+        dist.put("LOW", ((Number) summaryData.getOrDefault("lowRiskCount", 0L)).longValue());
+        dist.put("MEDIUM", ((Number) summaryData.getOrDefault("mediumRiskCount", 0L)).longValue());
+        dist.put("HIGH", ((Number) summaryData.getOrDefault("highRiskCount", 0L)).longValue());
+        dto.setRiskDistribution(dist);
 
         @SuppressWarnings("unchecked")
         Map<String, Long> statusCounts = (Map<String, Long>) alertStats.get("statusCounts");
@@ -66,6 +73,12 @@ public class DashboardController {
         Batch activeBatch = (Batch) summaryData.get("activeBatch");
         if (activeBatch != null) {
             batchInfo.put("batchId", activeBatch.getBatchId());
+            batchInfo.put("status", activeBatch.getStatus() != null ? activeBatch.getStatus() : "COMPLETED");
+            batchInfo.put("transactionCount", activeBatch.getTransactionCount());
+            batchInfo.put("fraudCount", activeBatch.getFraudCount());
+            batchInfo.put("highRiskCount", activeBatch.getHighRiskCount());
+            batchInfo.put("mediumRiskCount", activeBatch.getMediumRiskCount());
+            batchInfo.put("lowRiskCount", activeBatch.getLowRiskCount());
             batchInfo.put("modelVersion", activeBatch.getModelVersion());
             batchInfo.put("datasetVersion", activeBatch.getDatasetVersion());
             batchInfo.put("processingTimeSeconds", activeBatch.getProcessingTimeSeconds());
